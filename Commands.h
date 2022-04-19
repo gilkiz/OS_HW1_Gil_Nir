@@ -8,13 +8,17 @@
 
 class Command {
 // TODO: Add your data members
+ protected:
+   char **args;
+   int size_args;
+
  public:
-  Command(const char* cmd_line);
-  virtual ~Command();
-  virtual void execute() = 0;
-  //virtual void prepare();
-  //virtual void cleanup();
-  // TODO: Add your extra methods if needed
+   Command(const char *cmd_line);
+   virtual ~Command();
+   virtual void execute() = 0;
+   // virtual void prepare();
+   // virtual void cleanup();
+   //  TODO: Add your extra methods if needed
 };
 
 class BuiltInCommand : public Command {
@@ -50,7 +54,8 @@ class RedirectionCommand : public Command {
 
 class ChangeDirCommand : public BuiltInCommand {
 // TODO: Add your data members public:
-  ChangeDirCommand(const char* cmd_line, char** plastPwd);
+  char **last_directory;
+  ChangeDirCommand(const char *cmd_line, char **plastPwd);
   virtual ~ChangeDirCommand() {}
   void execute() override;
 };
@@ -63,9 +68,10 @@ class GetCurrDirCommand : public BuiltInCommand {
 };
 
 class ShowPidCommand : public BuiltInCommand {
+  int pid;
  public:
   ShowPidCommand(const char* cmd_line);
-  virtual ~ShowPidCommand() {}
+  virtual ~ShowPidCommand() = default;
   void execute() override;
 };
 
@@ -150,7 +156,11 @@ class TouchCommand : public BuiltInCommand {
 class SmallShell {
  private:
   // TODO: Add your data members
-  SmallShell();
+   std::string shellname;
+   char *last_directory;
+   JobsList *jobs_list;
+   SmallShell();
+
  public:
   Command *CreateCommand(const char* cmd_line);
   SmallShell(SmallShell const&)      = delete; // disable copy ctor
@@ -163,6 +173,8 @@ class SmallShell {
   }
   ~SmallShell();
   void executeCommand(const char* cmd_line);
+  std::string GetName();
+  char **GetLastDirectory();
   // TODO: add extra methods as needed
 };
 
