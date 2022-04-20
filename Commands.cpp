@@ -8,6 +8,7 @@
 #include "Commands.h"
 #include <time.h>
 #include <utime.h>
+#include <stdlib.h>
 
 using std::string;
 using namespace std;
@@ -121,23 +122,6 @@ SmallShell::~SmallShell() {
 * Creates and returns a pointer to Command class which matches the given command line (cmd_line)
 */
 Command * SmallShell::CreateCommand(const char* cmd_line) {
-	// For example:
-/*
-  string cmd_s = _trim(string(cmd_line));
-  string firstWord = cmd_s.substr(0, cmd_s.find_first_of(" \n"));
-
-  if (firstWord.compare("pwd") == 0) {
-    return new GetCurrDirCommand(cmd_line);
-  }
-  else if (firstWord.compare("showpid") == 0) {
-    return new ShowPidCommand(cmd_line);
-  }
-  else if ...
-  .....
-  else {
-    return new ExternalCommand(cmd_line);
-  }
-  */
   bool is_background = false;
   if (_isBackgroundComamnd(cmd_line))
   {
@@ -159,10 +143,15 @@ Command * SmallShell::CreateCommand(const char* cmd_line) {
   
   case "cd":
     return new ChangeDirCommand(cmd_line, this->GetLastDirectory());
+    break;
 
-  
-    
-    
+  case "jobs":
+    return new JobsCommand(cmd_line, this->jobs_list);
+    break;
+
+  case "kill":
+    return new KillCommand(cmd_line, this->jobs_list);
+    break;
 
   default:
     break;
@@ -197,11 +186,6 @@ void SmallShell::executeCommand(const char *cmd_line) {
     this->shellname = string(args[1]) + "> ";
     return;
   }
-  else if(firstWord.compare("jobs") == 0)
-  {
-    this->jobs_list->printJobsList();
-    return;
-  }
 
   Command *cmd = CreateCommand(cmd_line);
   cmd->execute();
@@ -216,18 +200,25 @@ char **SmallShell::GetLastDirectory()
 {
   return &(this->last_directory);
 }
+/*======================================================*/
+/*================== Commands Methods ==================*/
+/*======================================================*/
 
-/*================ Commands Methods ================*/
+// Command
 
 Command::Command(const char *cmd_line)
 {
   int size = _numOfStringsInArray(cmd_line);
+  this->cmd_line = cmd_line;
+  _removeBackgroundSign(cmd_line);
   this->args = (char **)malloc(sizeof(char *) * size);
   if(this->args == NULL)
-    ;                                                 // error
+    throw std::bad_alloc(); // allocation error
   if(size != _parseCommandLine(cmd_line, this->args))
     ; // error
   this->size_args = size;
+  this->pid = getpid();
+  this->is_finished = false;
 }
 
 Command::~Command()
@@ -237,6 +228,13 @@ Command::~Command()
   free(this->args);
   this->size_args = 0;
 }
+
+int Command::getPID()
+{
+  return this->pid;
+}
+
+// ShowPidCommand, showpid
 
 ShowPidCommand::ShowPidCommand(const char* cmd_line)
 {
@@ -248,7 +246,11 @@ ShowPidCommand::ShowPidCommand(const char* cmd_line)
 void ShowPidCommand::execute()
 {
   std::cout << "smash pid is " << this->pid << std::endl;
+
+  this->is_finished = true;
 }
+
+// GetCurrDirCommand, pwd
 
 GetCurrDirCommand::GetCurrDirCommand(const char* cmd_line)
 {
@@ -263,7 +265,10 @@ void GetCurrDirCommand::execute()
     std::cout << root << std::endl;
   else
     perror("smash error: getcwd failed");
+  this->is_finished = true;
 }
+
+// ChangeDirCommand, cd
 
 ChangeDirCommand::ChangeDirCommand(const char* cmd_line, char** plastPwd) : Command(cmd_line)
 {
@@ -276,13 +281,18 @@ void ChangeDirCommand::execute()
   {
     char before_change_pwd[PATH_MAX];
     if(getcwd(before_change_pwd, sizeof(before_change_pwd)) == NULL)
+    {
       perror("smash error: getcwd failed");
+      this->is_finished = true;
+      return;
+    }
     char *cd;
     if (this->args[1] == "-")
     {
       if(this->last_directory == NULL) 
       {
         std::cout << "smash error: cd: OLDPWD not set" << std::endl;
+        this->is_finished = true;
         return;
       }
       cd = *(this->last_directory);
@@ -290,11 +300,214 @@ void ChangeDirCommand::execute()
     else
       cd = args[1];
     if (chdir(cd) != 0)
-        perror("smash error: chdir failed");
+    {
+      perror("smash error: chdir failed");
+      this->is_finished = true;
+      return;
+    }
     *(this->last_directory) = before_change_pwd;
   }
   else if(this->size_args > 2)
   {
     std::cout << "smash error: cd: too many arguments" << std::endl;
   }
+
+  this->is_finished = true;
+}
+
+// JobsCommand, jobs
+
+JobsCommand::JobsCommand(const char* cmd_line, JobsList* jobs) : Command(cmd_line)
+{
+  this->jobs = jobs;
+}
+
+void JobsCommand::execute()
+{
+  this->jobs->removeFinishedJobs();
+  this->jobs->printJobsList();
+  
+  this->is_finished = true;
+}
+
+// KillCommand, kill
+
+KillCommand::KillCommand(const char *cmd_line, JobsList *jobs) : Command(cmd_line)
+{
+  this->jobs = jobs;
+}
+
+void KillCommand::execute()
+{
+  if(this->size_args != 3 || (this->args[1])[0] != '-')
+  {
+    std::cout << "smash error: kill: invalid arguments" << std::endl;
+    return;
+  }
+  int sig = atoi((string(this->args[1])).substr(1).c_str());
+  int jobid = atoi(this->args[2]);
+  if (sig == 0 || jobid == 0)
+  {
+    std::cout << "smash error: kill: invalid arguments" << std::endl;
+    this->is_finished = true;
+    return;
+  }
+  JobEntry *job = this->jobs->getJobById(jobid);
+  if(job == nullptr)
+  {
+    std::cout << "smash error: kill: job-id " << jobid << " does not exist" << std::endl;
+    this->is_finished = true;
+    return;
+  }
+  int pid = job->getPID();
+  if(kill(pid, sig) != 0)
+  {
+    perror("smash error: kill failed");
+    this->is_finished = true;
+    return;
+  }
+  std::cout << "signal number " << sig << " was sent to pid " << pid << std::endl;
+  
+  this->is_finished = true;
+}
+
+// ForegroundCommand, fg
+
+ForegroundCommand::ForegroundCommand(const char* cmd_line, JobsList* jobs) : Command(cmd_line)
+{
+  this->jobs = jobs;
+}
+
+void ForegroundCommand::execute()
+{
+  JobsList::JobEntry *job;
+  int jobid = 0;
+  if (this->size_args == 2)
+  {
+    jobid = atoi(this->args[1]);
+    if(jobid == 0)
+    {
+      std::cout << "smash error: fg: invalid arguments" << std::endl;
+      this->is_finished = true;
+      return;
+    }
+    job = this->jobs->getJobById(jobid);
+  }
+  else if(this->size_args == 1)
+  {
+    job = this->jobs->getLastJob(&jobid);
+  }
+  else
+  {
+    std::cout << "smash error: fg: invalid arguments" << std::endl;
+    this->is_finished = true;
+    return;
+  }
+
+  
+}
+
+/*=====================================================*/
+/*=============JobsList & JobEntry Methods=============*/
+/*=====================================================*/
+
+JobsList::void addJob(Command* cmd, bool isStopped = false)
+{
+  int available_job_id = 1;
+  JobsList::JobEntry *temp = this->getLastJob(&available_job_id);
+  available_job_id++;
+  JobsList::JobEntry *new_job = new JobsList::JobEntry(cmd, available_job_id, isStopped);
+  new_job->setTime(time());
+  this->jobs.pushback(new_job);
+}
+
+void JobsList::printJobsList(){
+  for (int i=0; i<(this->jobs).size(); i++){
+    time_t current_time=time();
+    double seconds_elapsed = difftime(jobs[i]->time, current_time);
+    if(jobs[i]->is_stopped){
+      std::cout <<"["<< jobs[i]->job_id <<"] "<<(jobs[i]->cmd)->cmd_line<<" : "<<(jobs[i]->cmd)->pid<<" "<<seconds_elapsed<<"(stopped)"<<std::endl;  
+    }
+    else{
+      std::cout <<"["<< jobs[i]->job_id <<"] "<<(jobs[i]->cmd)->cmd_line<<" : "<<(jobs[i]->cmd)->pid<<" "<<seconds_elapsed<<std::endl;
+    }
+  }
+}
+
+void JobsList::killAllJobs(){
+  for(int i=0; i<(this->jobs).size(); i++){
+    delete(jobs[i]->cmd);
+    delete(jobs[i]);
+  }
+}
+
+void JobsList::void removeFinishedJobs(){
+  for(int i=0; i<this->jobs.size(); i++){
+    if((this->jobs)[i]->cmd)->is_finished){
+      (this->jobs).erase(i);
+    }
+  }
+}
+
+JobEntry * JobsList::getJobById(int jobId){
+  for(int i=0; i<(this->jobs).size(); i++){
+    if(((this->jobs)[i]->job_id)==jobID){
+      return (this->jobs)[i];
+    }
+  }
+}
+
+void JobList::removeJobById(int jobId){
+  for(int i=0; i<(this->jobs).size(); i++){
+    if(((this->jobs)[i]->job_id)==jobID){
+      (this->jobs).erase(i);
+    }
+  }
+}
+
+JobEntry * JobList::getLastJob(int* lastJobId){
+  int j=(this->jobs).size();
+  if(j==0){
+    lastJobId = nullptr;
+    return nullptr;
+  }
+  JobEntry* temp=(this->jobs)[j];
+  *lastJobId = temp->job_id;
+  return temp;
+}
+
+JobEntry * JobList::getLastStoppedJob(int *jobId){
+  for(int i=((this->jobs).size())-1; i>=0; i--){
+    if((this->jobs)[i]->is_stopped){
+      jobID=(this->jobs)[i]->job_id;
+      return (this->jobs)[i];
+    }
+  }
+  jobID=nullptr;
+  return nullptr;
+}
+
+
+//=========================Job Entry=============================
+
+JobsList::JobEntry::JobEntry(Command *cmd, int jobid, bool isStopped)
+{
+  this->cmd = cmd;
+  this->job_id = jobid;
+  this->is_stopped = isStopped;
+  this->insert_time();
+}
+
+JobsList::JobEntry::~JobEntry(){
+  delete(this->cmd);
+}
+
+int JobsList::JobEntry::getJobID(){
+  return this->job_id;
+}
+int JobsList::JobEntry::getPID(){
+  return this->cmd->getPID();
+}
+void JobsList::JobsEntry::setTime(time_t new_time){
+  this->insert_time=new_time;
 }

@@ -10,12 +10,16 @@ class Command {
 // TODO: Add your data members
  protected:
    char **args;
+   const char *cmd_line;
    int size_args;
+   int pid;
+   bool is_finished;
 
  public:
    Command(const char *cmd_line);
    virtual ~Command();
    virtual void execute() = 0;
+   int getPID();
    // virtual void prepare();
    // virtual void cleanup();
    //  TODO: Add your extra methods if needed
@@ -90,11 +94,25 @@ class JobsList {
  public:
   class JobEntry {
    // TODO: Add your data members
+   Command *cmd;
+   int job_id;
+   bool is_stopped;
+   time_t insert_time;
+
+   public:
+    JobEntry(Command *cmd, int jobid, bool isStopped);
+    ~JobEntry();
+    int getJobID();
+    int getPID();
+    void setTime();
   };
  // TODO: Add your data members
- public:
+
+  vector<JobsEntry *> jobs;
+
+public:
   JobsList();
-  ~JobsList();
+  ~JobsList()=default; //???
   void addJob(Command* cmd, bool isStopped = false);
   void printJobsList();
   void killAllJobs();
@@ -103,31 +121,36 @@ class JobsList {
   void removeJobById(int jobId);
   JobEntry * getLastJob(int* lastJobId);
   JobEntry *getLastStoppedJob(int *jobId);
-  // TODO: Add extra methods or modify exisitng ones as needed
 };
 
 class JobsCommand : public BuiltInCommand {
  // TODO: Add your data members
+ JobsList *jobs;
+ 
  public:
-  JobsCommand(const char* cmd_line, JobsList* jobs);
-  virtual ~JobsCommand() {}
-  void execute() override;
+ JobsCommand(const char *cmd_line, JobsList *jobs);
+ virtual ~JobsCommand() {}
+ void execute() override;
 };
 
 class KillCommand : public BuiltInCommand {
  // TODO: Add your data members
+ JobsList *jobs;
+
  public:
-  KillCommand(const char* cmd_line, JobsList* jobs);
-  virtual ~KillCommand() {}
-  void execute() override;
+ KillCommand(const char *cmd_line, JobsList *jobs);
+ virtual ~KillCommand() {}
+ void execute() override;
 };
 
 class ForegroundCommand : public BuiltInCommand {
  // TODO: Add your data members
+ JobsList *jobs;
+
  public:
-  ForegroundCommand(const char* cmd_line, JobsList* jobs);
-  virtual ~ForegroundCommand() {}
-  void execute() override;
+ ForegroundCommand(const char *cmd_line, JobsList *jobs);
+ virtual ~ForegroundCommand() {}
+ void execute() override;
 };
 
 class BackgroundCommand : public BuiltInCommand {
@@ -159,7 +182,7 @@ class SmallShell {
    std::string shellname;
    char *last_directory;
    JobsList *jobs_list;
-   SmallShell();
+   SmallShell(); //??  <--
 
  public:
   Command *CreateCommand(const char* cmd_line);
