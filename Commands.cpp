@@ -429,7 +429,8 @@ void JobsList::killAllJobs(){  //*not right function probably
 void JobsList::removeFinishedJobs(){
   for(size_t i=0; i<this->jobs.size(); i++){
     if ((this->jobs)[i]->GetIsFinished())
-      (this->jobs).erase(i);
+      int j = static_cast<int>(i);
+      (this->jobs).erase(j);
     }
   }
 
@@ -445,7 +446,8 @@ void JobsList::removeJobById(int jobId)
 {
   for(size_t i=0; i<(this->jobs).size(); i++){
     if(((this->jobs)[i]->getJobID())==jobId){
-      (this->jobs).erase(i);
+      int j = static_cast<int>(i);
+      (this->jobs).erase(j);
     }
   }
 }
