@@ -362,7 +362,7 @@ void ForegroundCommand::execute()
   }
   if(job->GetIsStopped())
     job->SwitchIsStopped();
-  std::cout << job->GetCMD()->GetCmdLine() << ": " << job->GetPID() << std::endl;
+  std::cout << job->GetCMD()->GetCmdLine() << ": " << job->getPID() << std::endl;
   int status = 0;
   waitpid(job->getPID(), &status, WUNTRACED);
   if(WIFEXITED(status) || WIFSIGNALED(status))
@@ -505,11 +505,13 @@ void JobsList::JobEntry::SwitchIsStopped()
 {
   this->is_stopped = !(this->is_stopped);
   if(this->is_stopped)
+  {
     if(kill(this->cmd->getPID(), SIGSTOP) != 0)
     {
       perror("smash error: kill failed");
       return;
     }
+  }
   else if(kill(this->cmd->getPID(), SIGCONT) != 0)
   {
     perror("smash error: kill failed");
