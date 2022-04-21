@@ -427,10 +427,11 @@ void JobsList::killAllJobs(){  //*not right function probably
 }
 
 void JobsList::removeFinishedJobs(){
-  for(size_t i=0; i<this->jobs.size(); i++){
+  for(size_t i=0; i<this->jobs.size(); i++)
+  {
     if ((this->jobs)[i]->GetIsFinished())
-      int j = static_cast<int>(i);
-      (this->jobs).erase(j);
+    {
+      (this->jobs).erase((this->jobs)[i]);
     }
   }
 
@@ -444,10 +445,11 @@ JobsList::JobEntry * JobsList::getJobById(int jobId){
 
 void JobsList::removeJobById(int jobId)
 {
-  for(size_t i=0; i<(this->jobs).size(); i++){
-    if(((this->jobs)[i]->getJobID())==jobId){
-      int j = static_cast<int>(i);
-      (this->jobs).erase(j);
+  for(size_t i=0; i<(this->jobs).size(); i++)
+  {
+    if(((this->jobs)[i]->getJobID())==jobId)
+    {
+      (this->jobs).erase((this->jobs)[i]);
     }
   }
 }
@@ -455,7 +457,7 @@ void JobsList::removeJobById(int jobId)
 JobsList::JobEntry * JobsList::getLastJob(int* lastJobId){
   int j=(this->jobs).size();
   if(j==0){
-    lastJobId = nullptr;
+    *lastJobId = 0;
     return nullptr;
   }
   JobsList::JobEntry* temp=(this->jobs)[j];
@@ -463,14 +465,14 @@ JobsList::JobEntry * JobsList::getLastJob(int* lastJobId){
   return temp;
 }
 
-JobsList::JobEntry * JobList::getLastStoppedJob(int *jobId){
+JobsList::JobEntry * JobsList::getLastStoppedJob(int *jobId){
   for(size_t i=((this->jobs).size())-1; i>=0; i--){
     if((this->jobs)[i]->GetIsStopped()){
       *jobId = (this->jobs)[i]->getJobID();
       return (this->jobs)[i];
     }
   }
-  jobID = nullptr;
+  *jobId = 0;
   return nullptr;
 }
 
@@ -483,7 +485,7 @@ JobsList::JobEntry::JobEntry(Command *cmd, int jobid, bool isStopped)
   this->job_id = jobid;
   this->is_stopped = isStopped;
   this->is_finished = false;
-  this->insert_time();
+  this->insert_time = 0;
 }
 
 JobsList::JobEntry::~JobEntry(){
@@ -511,6 +513,6 @@ time_t JobsList::JobEntry::GetInsertTime()
 {
   return this->insert_time;
 }
-void JobsList::JobsEntry::setTime(){
+void JobsList::JobEntry::setTime(){
   time(&(this->insert_time));
 }
