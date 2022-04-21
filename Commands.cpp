@@ -128,10 +128,10 @@ Command * SmallShell::CreateCommand(const char* cmd_line) {
     return new KillCommand(cmd_line, this->jobs_list);
   else if (firstWord.compare("fg") == 0)
     return new ForegroundCommand(cmd_line, this->jobs_list);
-  else if (firstWord.compare("bg") == 0)
-    return new BackgroundCommand(cmd_line, this->jobs_list);
-  else if (firstWord.compare("quit") == 0)
-    return new QuitCommand(cmd_line, this->jobs_list);
+  //else if (firstWord.compare("bg") == 0)
+  //  return new BackgroundCommand(cmd_line, this->jobs_list);
+  //else if (firstWord.compare("quit") == 0)
+  //  return new QuitCommand(cmd_line, this->jobs_list);
   else
 
     return nullptr;
