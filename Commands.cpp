@@ -434,6 +434,7 @@ void JobsList::removeFinishedJobs(){
       (this->jobs).erase((this->jobs)[i]);
     }
   }
+}
 
 JobsList::JobEntry * JobsList::getJobById(int jobId){
   for(size_t i=0; i<(this->jobs).size(); i++){
