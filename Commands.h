@@ -61,7 +61,6 @@ class RedirectionCommand : public Command {
 class ChangePromptCommand : public BuiltInCommand
 {
   string *shell_name;
-
 public:
   ChangePromptCommand(const char *cmd_line, string *shell_name);
   virtual ~ChangePromptCommand() {}
@@ -79,9 +78,9 @@ class ChangeDirCommand : public BuiltInCommand {
 
 class GetCurrDirCommand : public BuiltInCommand {
  public:
-  GetCurrDirCommand(const char* cmd_line);
-  virtual ~GetCurrDirCommand() {}
-  void execute() override;
+   GetCurrDirCommand(const char *cmd_line) : BuiltInCommand(cmd_line){};
+   virtual ~GetCurrDirCommand() {}
+   void execute() override;
 };
 
 class ShowPidCommand : public BuiltInCommand {
@@ -95,6 +94,7 @@ class ShowPidCommand : public BuiltInCommand {
 class JobsList;
 class QuitCommand : public BuiltInCommand {
 // TODO: Add your data members public:
+public:
   QuitCommand(const char* cmd_line, JobsList* jobs);
   virtual ~QuitCommand() {}
   void execute() override;
