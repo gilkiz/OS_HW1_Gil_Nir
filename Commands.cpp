@@ -9,6 +9,7 @@
 #include <time.h>
 #include <utime.h>
 #include <stdlib.h>
+#include <linux/limits.h>
 
 using std::string;
 using namespace std;
@@ -64,7 +65,7 @@ int _parseCommandLine(const char* cmd_line, char** args) {
 }
 
 // * returns if its a background command
-bool _isBackgroundComamnd(const char* cmd_line) {
+bool _isBackgroundCommand(const char* cmd_line) {
   const string str(cmd_line);
   return str[str.find_last_not_of(WHITESPACE)] == '&';
 }
@@ -96,7 +97,7 @@ int _numOfStringsInArray(const char* cmd_line)
 
   if(cmd_line[0] != ' ') cnt++;
 
-  for (int i = 1; i <= end; i++)
+  for (size_t i = 1; i <= end; i++)
   {
     if(cmd_line[i-1] == ' ' && cmd_line[i] != ' ')
       cnt++;
@@ -122,42 +123,36 @@ SmallShell::~SmallShell() {
 * Creates and returns a pointer to Command class which matches the given command line (cmd_line)
 */
 Command * SmallShell::CreateCommand(const char* cmd_line) {
+  char *command_line = const_cast<char *>(cmd_line);
   bool is_background = false;
-  if (_isBackgroundComamnd(cmd_line))
+  if (_isBackgroundCommand(cmd_line))
   {
     is_background = true;
-    _removeBackgroundSign(cmd_line);
+    _removeBackgroundSign(command_line);
   }
-  string cmd_s = _trim(string(cmd_line));
+  string cmd_s = _trim(string(command_line));
   string firstWord = cmd_s.substr(0, cmd_s.find_first_of(" \n"));
   
-  switch (firstWord)
-  {
-  case "pwd":
+  if(firstWord.compare("chprompt") == 0)
+    return new ChangePromptCommand(cmd_line, &(this->shellname));
+  else if (firstWord.compare("pwd") == 0)
     return new GetCurrDirCommand(cmd_line);
-    break;
-
-  case "showpid":
+  else if (firstWord.compare("showpid") == 0)
     return new ShowPidCommand(cmd_line);
-    break;
-  
-  case "cd":
+  else if (firstWord.compare("cd") == 0)
     return new ChangeDirCommand(cmd_line, this->GetLastDirectory());
-    break;
-
-  case "jobs":
+  else if (firstWord.compare("jobs") == 0)
     return new JobsCommand(cmd_line, this->jobs_list);
-    break;
-
-  case "kill":
+  else if (firstWord.compare("kill") == 0)
     return new KillCommand(cmd_line, this->jobs_list);
-    break;
+  else if (firstWord.compare("fg") == 0)
+    return new ForegroundCommand(cmd_line, this->jobs_list);
+  else if (firstWord.compare("bg") == 0)
+    return new BackgroundCommand(cmd_line, this->jobs_list);
+  else if (firstWord.compare("quit") == 0)
+    return new QuitCommand(cmd_line, this->jobs_list);
 
-  default:
-    break;
-  }
-
-  return nullptr;
+    return nullptr;
 }
 
 void SmallShell::executeCommand(const char *cmd_line) {
@@ -166,26 +161,6 @@ void SmallShell::executeCommand(const char *cmd_line) {
   // Command* cmd = CreateCommand(cmd_line);
   // cmd->execute();
   // Please note that you must fork smash process for some commands (e.g., external commands....)
-
-  string cmd_s = _trim(string(cmd_line));
-  string firstWord = cmd_s.substr(0, cmd_s.find_first_of(" \n"));
-  if(firstWord.compare("chprompt") == 0) 
-  {
-    int size = _numOfStringsInArray(cmd_line);
-    if(size <= 1)
-    {
-      this->shellname = "smash> ";
-      return;
-    }
-    char **args = (char **)malloc(sizeof(char *) * size);
-    if(args == NULL) // error
-    if(size != _parseCommandLine(cmd_line, args))
-    {
-      // error
-    }
-    this->shellname = string(args[1]) + "> ";
-    return;
-  }
 
   Command *cmd = CreateCommand(cmd_line);
   cmd->execute();
@@ -210,11 +185,12 @@ Command::Command(const char *cmd_line)
 {
   int size = _numOfStringsInArray(cmd_line);
   this->cmd_line = cmd_line;
-  _removeBackgroundSign(cmd_line);
+  char *command_line = const_cast<char *>(cmd_line);
+  _removeBackgroundSign(command_line);
   this->args = (char **)malloc(sizeof(char *) * size);
   if(this->args == NULL)
     throw std::bad_alloc(); // allocation error
-  if(size != _parseCommandLine(cmd_line, this->args))
+  if(size != _parseCommandLine(command_line, this->args))
     ; // error
   this->size_args = size;
   this->pid = getpid();
@@ -233,6 +209,31 @@ pid_t Command::getPID()
   return this->pid;
 }
 
+// ChangePromptCommand, chprompt
+
+ChangePromptCommand::ChangePromptCommand(const char *cmd_line, string* shell_name) : BuiltInCommand(cmd_line)
+{
+  this->shell_name = shell_name;
+}
+
+void ChangePromptCommand::execute()
+{
+    int size = _numOfStringsInArray(cmd_line);
+    if(size <= 1)
+    {
+      *(this->shell_name) = "smash> ";
+      return;
+    }
+    char **args = (char **)malloc(sizeof(char *) * size);
+    if(args == NULL)
+      throw std::bad_alloc();
+    if (size != _parseCommandLine(cmd_line, args))
+    {
+      // error
+    }
+    *(this->shell_name) = string(args[1]) + "> ";
+}
+
 // ShowPidCommand, showpid
 
 ShowPidCommand::ShowPidCommand(const char* cmd_line)
@@ -245,8 +246,6 @@ ShowPidCommand::ShowPidCommand(const char* cmd_line)
 void ShowPidCommand::execute()
 {
   std::cout << "smash pid is " << this->pid << std::endl;
-
-  this->is_finished = true;
 }
 
 // GetCurrDirCommand, pwd
@@ -264,12 +263,11 @@ void GetCurrDirCommand::execute()
     std::cout << root << std::endl;
   else
     perror("smash error: getcwd failed");
-  this->is_finished = true;
 }
 
 // ChangeDirCommand, cd
 
-ChangeDirCommand::ChangeDirCommand(const char* cmd_line, char** plastPwd) : Command(cmd_line)
+ChangeDirCommand::ChangeDirCommand(const char* cmd_line, char** plastPwd) : BuiltInCommand(cmd_line)
 {
   this->last_directory = plastPwd;
 }
@@ -282,7 +280,6 @@ void ChangeDirCommand::execute()
     if(getcwd(before_change_pwd, sizeof(before_change_pwd)) == NULL)
     {
       perror("smash error: getcwd failed");
-      this->is_finished = true;
       return;
     }
     char *cd;
@@ -291,7 +288,6 @@ void ChangeDirCommand::execute()
       if(this->last_directory == NULL) 
       {
         std::cout << "smash error: cd: OLDPWD not set" << std::endl;
-        this->is_finished = true;
         return;
       }
       cd = *(this->last_directory);
@@ -301,7 +297,6 @@ void ChangeDirCommand::execute()
     if (chdir(cd) != 0)
     {
       perror("smash error: chdir failed");
-      this->is_finished = true;
       return;
     }
     *(this->last_directory) = before_change_pwd;
@@ -310,13 +305,11 @@ void ChangeDirCommand::execute()
   {
     std::cout << "smash error: cd: too many arguments" << std::endl;
   }
-
-  this->is_finished = true;
 }
 
 // JobsCommand, jobs
 
-JobsCommand::JobsCommand(const char* cmd_line, JobsList* jobs) : Command(cmd_line)
+JobsCommand::JobsCommand(const char* cmd_line, JobsList* jobs) : BuiltInCommandine)
 {
   this->jobs = jobs;
 }
@@ -325,13 +318,11 @@ void JobsCommand::execute()
 {
   this->jobs->removeFinishedJobs();
   this->jobs->printJobsList();
-  
-  this->is_finished = true;
 }
 
 // KillCommand, kill
 
-KillCommand::KillCommand(const char *cmd_line, JobsList *jobs) : Command(cmd_line)
+KillCommand::KillCommand(const char *cmd_line, JobsList *jobs) : BuiltInCommand(cmd_line)
 {
   this->jobs = jobs;
 }
@@ -348,31 +339,26 @@ void KillCommand::execute()
   if (sig == 0 || jobid == 0)
   {
     std::cout << "smash error: kill: invalid arguments" << std::endl;
-    this->is_finished = true;
     return;
   }
   JobEntry *job = this->jobs->getJobById(jobid);
   if(job == nullptr)
   {
     std::cout << "smash error: kill: job-id " << jobid << " does not exist" << std::endl;
-    this->is_finished = true;
     return;
   }
   int pid = job->getPID();
   if(kill(pid, sig) != 0)
   {
     perror("smash error: kill failed");
-    this->is_finished = true;
     return;
   }
   std::cout << "signal number " << sig << " was sent to pid " << pid << std::endl;
-  
-  this->is_finished = true;
 }
 
 // ForegroundCommand, fg
 
-ForegroundCommand::ForegroundCommand(const char* cmd_line, JobsList* jobs) : Command(cmd_line)
+ForegroundCommand::ForegroundCommand(const char* cmd_line, JobsList* jobs) : BuiltInCommand(cmd_line)
 {
   this->jobs = jobs;
 }
@@ -387,7 +373,6 @@ void ForegroundCommand::execute()
     if(jobid == 0)
     {
       std::cout << "smash error: fg: invalid arguments" << std::endl;
-      this->is_finished = true;
       return;
     }
     job = this->jobs->getJobById(jobid);
@@ -399,7 +384,6 @@ void ForegroundCommand::execute()
   else
   {
     std::cout << "smash error: fg: invalid arguments" << std::endl;
-    this->is_finished = true;
     return;
   }
 
@@ -413,20 +397,21 @@ JobsList::JobsList(){
   this->jobs=new vector<JobEntry*>();
 }
 
-JobsList::void addJob(Command* cmd, bool isStopped = false)
+void JobsList::addJob(Command* cmd, bool isStopped = false)
 {
   int available_job_id = 1;
   JobsList::JobEntry *temp = this->getLastJob(&available_job_id);
   available_job_id++;
   JobsList::JobEntry *new_job = new JobsList::JobEntry(cmd, available_job_id, isStopped);
   new_job->setTime(time());
-  this->jobs.pushback(new_job);
+  this->jobs.push_back(new_job);
+
 }
 
 void JobsList::printJobsList(){
   for (int i=0; i<(this->jobs).size(); i++){
     time_t current_time=time();
-    double seconds_elapsed = difftime(jobs[i]->time, current_time);
+    double seconds_elapsed = difftime(jobs[i]->insert_time, current_time);
     if(jobs[i]->is_stopped){
       std::cout <<"["<< jobs[i]->job_id <<"] "<<(jobs[i]->cmd)->cmd_line<<" : "<<(jobs[i]->cmd)->pid<<" "<<seconds_elapsed<<"(stopped)"<<std::endl;  
     }

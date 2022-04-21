@@ -2,6 +2,8 @@
 #define SMASH_COMMAND_H_
 
 #include <vector>
+#include <string>
+using std::string;
 using std::vector;
 
 #define COMMAND_ARGS_MAX_LENGTH (200)
@@ -27,8 +29,8 @@ class Command {
 
 class BuiltInCommand : public Command {
  public:
-  BuiltInCommand(const char* cmd_line);
-  virtual ~BuiltInCommand() {}
+   BuiltInCommand(const char *cmd_line) : Command(cmd_line){};
+   virtual ~BuiltInCommand() {}
 };
 
 class ExternalCommand : public Command {
@@ -56,12 +58,23 @@ class RedirectionCommand : public Command {
   //void cleanup() override;
 };
 
+class ChangePromptCommand : public BuiltInCommand
+{
+  string *shell_name;
+
+public:
+  ChangePromptCommand(const char *cmd_line, string *shell_name);
+  virtual ~ChangePromptCommand() {}
+  void execute() override;
+};
+
 class ChangeDirCommand : public BuiltInCommand {
 // TODO: Add your data members public:
   char **last_directory;
-  ChangeDirCommand(const char *cmd_line, char **plastPwd);
-  virtual ~ChangeDirCommand() {}
-  void execute() override;
+  public:
+    ChangeDirCommand(const char *cmd_line, char **plastPwd);
+    virtual ~ChangeDirCommand() {}
+    void execute() override;
 };
 
 class GetCurrDirCommand : public BuiltInCommand {
@@ -109,9 +122,10 @@ class JobsList {
   };
  // TODO: Add your data members
 
-  vector<JobsEntry *> jobs;
+
 
 public:
+  vector<JobEntry *> jobs;
   JobsList();
   ~JobsList()=default; //???
   void addJob(Command* cmd, bool isStopped = false);
@@ -180,7 +194,7 @@ class TouchCommand : public BuiltInCommand {
 class SmallShell {
  private:
   // TODO: Add your data members
-   std::string shellname;
+   string shellname;
    char *last_directory;
    JobsList *jobs_list;
    SmallShell(); //??  <--
