@@ -441,6 +441,7 @@ JobsList::JobEntry * JobsList::getJobById(int jobId){
       return (this->jobs)[i];
     }
   }
+  return nullptr;
 }
 
 void JobsList::removeJobById(int jobId)
