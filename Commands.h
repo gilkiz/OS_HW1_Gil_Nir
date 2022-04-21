@@ -21,6 +21,7 @@ class Command {
    Command(const char *cmd_line);
    virtual ~Command();
    virtual void execute() = 0;
+   const char *GetCmdLine();
    pid_t getPID();
    // virtual void prepare();
    // virtual void cleanup();
@@ -116,8 +117,12 @@ class JobsList {
    public:
     JobEntry(Command *cmd, int jobid, bool isStopped);
     ~JobEntry();
+    Command *GetCMD();
     int getJobID();
     int getPID();
+    bool GetIsStopped();
+    bool GetIsFinished();
+    time_t GetInsertTime();
     void setTime();
   };
  // TODO: Add your data members
