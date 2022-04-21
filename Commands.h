@@ -127,8 +127,6 @@ class JobsList {
   };
  // TODO: Add your data members
 
-
-
 public:
   vector<JobEntry *> jobs;
   JobsList();

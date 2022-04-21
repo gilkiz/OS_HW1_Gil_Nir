@@ -426,7 +426,7 @@ void JobsList::killAllJobs(){  //*not right function probably
   }
 }
 
-void JobsList::void removeFinishedJobs(){
+void JobsList::removeFinishedJobs(){
   for(size_t i=0; i<this->jobs.size(); i++){
     if ((this->jobs)[i]->GetIsFinished())
       (this->jobs).erase(i);
@@ -435,21 +435,22 @@ void JobsList::void removeFinishedJobs(){
 
 JobsList::JobEntry * JobsList::getJobById(int jobId){
   for(size_t i=0; i<(this->jobs).size(); i++){
-    if(((this->jobs)[i]->getJobID())==jobID){
+    if(((this->jobs)[i]->getJobID())==jobId){
       return (this->jobs)[i];
     }
   }
 }
 
-void JobList::removeJobById(int jobId){
+void JobsList::removeJobById(int jobId)
+{
   for(size_t i=0; i<(this->jobs).size(); i++){
-    if(((this->jobs)[i]->getJobID())==jobID){
+    if(((this->jobs)[i]->getJobID())==jobId){
       (this->jobs).erase(i);
     }
   }
 }
 
-JobsList::JobEntry * JobList::getLastJob(int* lastJobId){
+JobsList::JobEntry * JobsList::getLastJob(int* lastJobId){
   int j=(this->jobs).size();
   if(j==0){
     lastJobId = nullptr;
@@ -463,7 +464,7 @@ JobsList::JobEntry * JobList::getLastJob(int* lastJobId){
 JobsList::JobEntry * JobList::getLastStoppedJob(int *jobId){
   for(size_t i=((this->jobs).size())-1; i>=0; i--){
     if((this->jobs)[i]->GetIsStopped()){
-      jobID = (this->jobs)[i]->getJobID();
+      *jobId = (this->jobs)[i]->getJobID();
       return (this->jobs)[i];
     }
   }
