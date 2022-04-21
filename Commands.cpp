@@ -360,13 +360,71 @@ void ForegroundCommand::execute()
     std::cout << "smash error: fg: invalid arguments" << std::endl;
     return;
   }
-  if(job->GetIsStopped())
+  if(job->IsStopped())
     job->SwitchIsStopped();
   std::cout << job->GetCMD()->GetCmdLine() << ": " << job->getPID() << std::endl;
   int status = 0;
   waitpid(job->getPID(), &status, WUNTRACED);
   if(WIFEXITED(status) || WIFSIGNALED(status))
     this->jobs->removeJobById(jobid);
+}
+
+// BackgroundCommand, bg
+
+BackgroundCommand::BackgroundCommand(const char *cmd_line, JobsList *jobs) : BuiltInCommand(cmd_line), jobs(jobs){};
+
+BackgroundCommand::execute()
+{
+  JobsList::JobEntry *job;
+  int jobid = 0;
+  if (this->size_args == 2)
+  {
+    jobid = atoi(this->args[1]);
+    if(jobid == 0)
+    {
+      std::cout << "smash error: bg: invalid arguments" << std::endl;
+      return;
+    }
+    job = this->jobs->getJobById(jobid);
+    if(!job)
+    {
+      std::cout << "smash error: bg: job-id " << jobid << " does not exist" << std::endl;
+      return;
+    }
+    if(!(job->IsStopped()))
+    {
+      std::cout << "smash error: bg: job-id " << jobid <<
+       " is already running in the background" << std::endl;
+      return;
+    }
+  }
+  else if(this->size_args == 1)
+  {
+    job = this->jobs->getLastStoppedJob(&jobid);
+    if(!job)
+    {
+      std::cout << "smash error: bg: there is no stopped jobs to resume" << std::endl;
+      return;
+    }
+  }
+  else
+  {
+    std::cout << "smash error: bg: invalid arguments" << std::endl;
+    return;
+  }
+  job->SwitchIsStopped();
+  std::cout << job->GetCMD()->GetCmdLine() << ": " << job->getPID() << std::endl;
+}
+
+// QuitCommand, quit
+
+QuitCommand::QuitCommand(const char *cmd_line, JobsList *jobs) : BuiltInCommand(cmd_line), jobs(jobs){};
+
+void QuitCommand::execute()
+{
+  if(this->size_args > 1 && string(this->args[1]).compare("kill") == 0)
+    this->jobs->killAllJobs();
+  exit(0);
 }
 
 /*=====================================================*/
@@ -392,7 +450,7 @@ void JobsList::printJobsList(){
     time_t current_time;
     time(&current_time);
     double seconds_elapsed = difftime(jobs[i]->GetInsertTime(), current_time);
-    if(jobs[i]->GetIsStopped()){
+    if(jobs[i]->IsStopped()){
       std::cout <<"["<< jobs[i]->getJobID() <<"] "<<(jobs[i]->GetCMD())->GetCmdLine()<<" : "<<(jobs[i]->GetCMD())->getPID()<<" "<<seconds_elapsed<<"(stopped)"<<std::endl;  
     }
     else{
@@ -463,7 +521,7 @@ JobsList::JobEntry * JobsList::getLastStoppedJob(int *jobId)
   vector<JobsList::JobEntry *>::reverse_iterator it = this->jobs.rbegin();
   for (; it != this->jobs.rend(); it++)
   {
-    if((*it)->GetIsStopped())
+    if((*it)->IsStopped())
     {
       *jobId = (*it)->getJobID();
       return (*it);
@@ -497,7 +555,7 @@ int JobsList::JobEntry::getJobID(){
 int JobsList::JobEntry::getPID(){
   return this->cmd->getPID();
 }
-bool JobsList::JobEntry::GetIsStopped()
+bool JobsList::JobEntry::IsStopped()
 {
   return this->is_stopped;
 }

@@ -95,10 +95,12 @@ class ShowPidCommand : public BuiltInCommand {
 class JobsList;
 class QuitCommand : public BuiltInCommand {
 // TODO: Add your data members public:
+JobsList *jobs;
+
 public:
-  QuitCommand(const char* cmd_line, JobsList* jobs);
-  virtual ~QuitCommand() {}
-  void execute() override;
+QuitCommand(const char *cmd_line, JobsList *jobs);
+virtual ~QuitCommand() {}
+void execute() override;
 };
 
 
@@ -119,7 +121,7 @@ class JobsList {
     Command *GetCMD();
     int getJobID();
     int getPID();
-    bool GetIsStopped();
+    bool IsStopped();
     void SwitchIsStopped();
     time_t GetInsertTime();
     void setTime();
@@ -173,10 +175,12 @@ class ForegroundCommand : public BuiltInCommand {
 
 class BackgroundCommand : public BuiltInCommand {
  // TODO: Add your data members
+ JobsList *jobs;
+
  public:
-  BackgroundCommand(const char* cmd_line, JobsList* jobs);
-  virtual ~BackgroundCommand() {}
-  void execute() override;
+ BackgroundCommand(const char *cmd_line, JobsList *jobs);
+ virtual ~BackgroundCommand() {}
+ void execute() override;
 };
 
 class TailCommand : public BuiltInCommand {
