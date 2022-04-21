@@ -218,7 +218,6 @@ Command::Command(const char *cmd_line)
     ; // error
   this->size_args = size;
   this->pid = getpid();
-  this->is_finished = false;
 }
 
 Command::~Command()
@@ -229,7 +228,7 @@ Command::~Command()
   this->size_args = 0;
 }
 
-int Command::getPID()
+pid_t Command::getPID()
 {
   return this->pid;
 }
@@ -410,6 +409,9 @@ void ForegroundCommand::execute()
 /*=====================================================*/
 /*=============JobsList & JobEntry Methods=============*/
 /*=====================================================*/
+JobsList::JobsList(){
+  this->jobs=new vector<JobEntry*>();
+}
 
 JobsList::void addJob(Command* cmd, bool isStopped = false)
 {
@@ -443,11 +445,10 @@ void JobsList::killAllJobs(){
 
 void JobsList::void removeFinishedJobs(){
   for(int i=0; i<this->jobs.size(); i++){
-    if((this->jobs)[i]->cmd)->is_finished){
+    if ((this->jobs)[i]->is_finished)
       (this->jobs).erase(i);
     }
   }
-}
 
 JobEntry * JobsList::getJobById(int jobId){
   for(int i=0; i<(this->jobs).size(); i++){
@@ -495,6 +496,7 @@ JobsList::JobEntry::JobEntry(Command *cmd, int jobid, bool isStopped)
   this->cmd = cmd;
   this->job_id = jobid;
   this->is_stopped = isStopped;
+  this->is_finished = false;
   this->insert_time();
 }
 

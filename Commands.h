@@ -2,6 +2,7 @@
 #define SMASH_COMMAND_H_
 
 #include <vector>
+using std::vector;
 
 #define COMMAND_ARGS_MAX_LENGTH (200)
 #define COMMAND_MAX_ARGS (20)
@@ -12,14 +13,13 @@ class Command {
    char **args;
    const char *cmd_line;
    int size_args;
-   int pid;
-   bool is_finished;
+   pid_t pid;
 
  public:
    Command(const char *cmd_line);
    virtual ~Command();
    virtual void execute() = 0;
-   int getPID();
+   pid_t getPID();
    // virtual void prepare();
    // virtual void cleanup();
    //  TODO: Add your extra methods if needed
@@ -97,6 +97,7 @@ class JobsList {
    Command *cmd;
    int job_id;
    bool is_stopped;
+   bool is_finished;
    time_t insert_time;
 
    public:
