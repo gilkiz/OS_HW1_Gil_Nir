@@ -430,8 +430,8 @@ JobsList::JobEntry *JobsList::getJobByPID(int jobPID)
 
 void JobsList::removeJobById(int jobId)
 {
-  for (auto it: this->jobs)
-    if((it->getJobID())==jobId)
+  for (auto it = this->jobs.begin(); it != this->jobs.end(); it++)
+    if(((*it)->getJobID()) == jobId)
       (this->jobs).erase(it);
 }
 
