@@ -394,7 +394,7 @@ void JobsList::killAllJobs()
   std::cout << "smash: sending SIGKILL signal to " << this->jobs.size() << " jobs:" << std::endl;
   for(auto it: this->jobs)
   {
-    if(kill(it->getPID, 9) != 0)
+    if(kill(it->getPID(), 9) != 0)
       {
         perror("smash error: kill failed");
         return;
@@ -423,7 +423,7 @@ JobsList::JobEntry * JobsList::getJobById(int jobId)
 JobsList::JobEntry *JobsList::getJobByPID(int jobPID)
 {
   for(auto it: this->jobs)
-    if(it.getPID() == jobPID)
+    if(it->getPID() == jobPID)
       return it;
   return nullptr;
 }
@@ -446,10 +446,12 @@ JobsList::JobEntry * JobsList::getLastJob(int* lastJobId){
   return temp;
 }
 
-JobsList::JobEntry * JobsList::getLastStoppedJob(int *jobId){
-  for(auto it = jobs_vector.end();it!=jobs_vector.begin(); it--)
+JobsList::JobEntry * JobsList::getLastStoppedJob(int *jobId)
+{
+  for(auto it = this->jobs.end();it!=this->jobs.begin(); it--)
   {
-    if(it->GetIsStopped()){
+    if(it->GetIsStopped())
+    {
       *jobId = it->getJobID();
       return it;
     }
