@@ -325,10 +325,7 @@ void KillCommand::execute()
 
 // ForegroundCommand, fg
 
-ForegroundCommand::ForegroundCommand(const char* cmd_line, JobsList* jobs) : BuiltInCommand::BuiltInCommand(cmd_line)
-{
-  this->jobs = jobs;
-}
+ForegroundCommand::ForegroundCommand(const char *cmd_line, JobsList *jobs) : BuiltInCommand::BuiltInCommand(cmd_line), jobs(jobs){};
 
 void ForegroundCommand::execute()
 {
@@ -343,18 +340,33 @@ void ForegroundCommand::execute()
       return;
     }
     job = this->jobs->getJobById(jobid);
+    if(!job)
+    {
+      std::cout << "smash error: fg: job-id " << jobid << " does not exist" << std::endl;
+      return;
+    }
   }
   else if(this->size_args == 1)
   {
     job = this->jobs->getLastJob(&jobid);
+    if(!job)
+    {
+      std::cout << "smash error: fg: jobs list is empty" << std::endl;
+      return;
+    }
   }
   else
   {
     std::cout << "smash error: fg: invalid arguments" << std::endl;
     return;
   }
-
-  
+  if(job->GetIsStopped())
+    job->SwitchIsStopped();
+  std::cout << job->GetCMD()->GetCmdLine() << ": " << job->GetPID() << std::endl;
+  int status = 0;
+  waitpid(job->getPID(), &status, WUNTRACED);
+  if(WIFEXITED(status) || WIFSIGNALED(status))
+    this->jobs->removeJobById(jobid);
 }
 
 /*=====================================================*/
@@ -394,7 +406,7 @@ void JobsList::killAllJobs()
   std::cout << "smash: sending SIGKILL signal to " << this->jobs.size() << " jobs:" << std::endl;
   for(auto it: this->jobs)
   {
-    if(kill(it->getPID(), 9) != 0)
+    if(kill(it->getPID(), SIGKILL) != 0)
       {
         perror("smash error: kill failed");
         return;
@@ -488,6 +500,21 @@ int JobsList::JobEntry::getPID(){
 bool JobsList::JobEntry::GetIsStopped()
 {
   return this->is_stopped;
+}
+void JobsList::JobEntry::SwitchIsStopped()
+{
+  this->is_stopped = !(this->is_stopped);
+  if(this->is_stopped)
+    if(kill(this->cmd->getPID(), SIGSTOP) != 0)
+    {
+      perror("smash error: kill failed");
+      return;
+    }
+  else if(kill(this->cmd->getPID(), SIGCONT) != 0)
+  {
+    perror("smash error: kill failed");
+    return;
+  }
 }
 time_t JobsList::JobEntry::GetInsertTime()
 {

@@ -120,6 +120,7 @@ class JobsList {
     int getJobID();
     int getPID();
     bool GetIsStopped();
+    void SwitchIsStopped();
     time_t GetInsertTime();
     void setTime();
   };
