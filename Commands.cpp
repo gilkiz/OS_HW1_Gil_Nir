@@ -11,6 +11,7 @@
 #include <stdlib.h>
 #include <linux/limits.h>
 
+using JobsList::JobEntry;
 using std::string;
 using namespace std;
 
@@ -151,6 +152,7 @@ Command * SmallShell::CreateCommand(const char* cmd_line) {
     return new BackgroundCommand(cmd_line, this->jobs_list);
   else if (firstWord.compare("quit") == 0)
     return new QuitCommand(cmd_line, this->jobs_list);
+  else
 
     return nullptr;
 }
@@ -211,7 +213,7 @@ pid_t Command::getPID()
 
 // ChangePromptCommand, chprompt
 
-ChangePromptCommand::ChangePromptCommand(const char *cmd_line, string* shell_name) : BuiltInCommand(cmd_line)
+ChangePromptCommand::ChangePromptCommand(const char *cmd_line, string* shell_name) : BuiltInCommand::BuiltInCommand(cmd_line)
 {
   this->shell_name = shell_name;
 }
@@ -236,10 +238,8 @@ void ChangePromptCommand::execute()
 
 // ShowPidCommand, showpid
 
-ShowPidCommand::ShowPidCommand(const char* cmd_line)
+ShowPidCommand::ShowPidCommand(const char* cmd_line) : BuiltInCommand::BuiltInCommand(cmd_line)
 {
-  this->args = nullptr;
-  this->size_args = 0;
   this->pid = getpid();
 }
 
@@ -249,12 +249,6 @@ void ShowPidCommand::execute()
 }
 
 // GetCurrDirCommand, pwd
-
-GetCurrDirCommand::GetCurrDirCommand(const char* cmd_line)
-{
-  this->args = nullptr;
-  this->size_args = 0;
-}
 
 void GetCurrDirCommand::execute()
 {
@@ -267,7 +261,7 @@ void GetCurrDirCommand::execute()
 
 // ChangeDirCommand, cd
 
-ChangeDirCommand::ChangeDirCommand(const char* cmd_line, char** plastPwd) : BuiltInCommand(cmd_line)
+ChangeDirCommand::ChangeDirCommand(const char* cmd_line, char** plastPwd) : BuiltInCommand::BuiltInCommand(cmd_line)
 {
   this->last_directory = plastPwd;
 }
@@ -283,7 +277,7 @@ void ChangeDirCommand::execute()
       return;
     }
     char *cd;
-    if (this->args[1] == "-")
+    if (this->args[1] == '-')
     {
       if(this->last_directory == NULL) 
       {
@@ -309,7 +303,7 @@ void ChangeDirCommand::execute()
 
 // JobsCommand, jobs
 
-JobsCommand::JobsCommand(const char* cmd_line, JobsList* jobs) : BuiltInCommandine)
+JobsCommand::JobsCommand(const char* cmd_line, JobsList* jobs) : BuiltInCommand::BuiltInCommand(cmd_line)
 {
   this->jobs = jobs;
 }
@@ -322,7 +316,7 @@ void JobsCommand::execute()
 
 // KillCommand, kill
 
-KillCommand::KillCommand(const char *cmd_line, JobsList *jobs) : BuiltInCommand(cmd_line)
+KillCommand::KillCommand(const char *cmd_line, JobsList *jobs) : BuiltInCommand::BuiltInCommand(cmd_line)
 {
   this->jobs = jobs;
 }
@@ -358,7 +352,7 @@ void KillCommand::execute()
 
 // ForegroundCommand, fg
 
-ForegroundCommand::ForegroundCommand(const char* cmd_line, JobsList* jobs) : BuiltInCommand(cmd_line)
+ForegroundCommand::ForegroundCommand(const char* cmd_line, JobsList* jobs) : BuiltInCommand::BuiltInCommand(cmd_line)
 {
   this->jobs = jobs;
 }
@@ -394,13 +388,13 @@ void ForegroundCommand::execute()
 /*=============JobsList & JobEntry Methods=============*/
 /*=====================================================*/
 JobsList::JobsList(){
-  this->jobs=new vector<JobEntry*>();
+  this->jobs = new vector<JobEntry*>();
 }
 
 void JobsList::addJob(Command* cmd, bool isStopped = false)
 {
   int available_job_id = 1;
-  JobsList::JobEntry *temp = this->getLastJob(&available_job_id);
+  this->getLastJob(&available_job_id);
   available_job_id++;
   JobsList::JobEntry *new_job = new JobsList::JobEntry(cmd, available_job_id, isStopped);
   new_job->setTime(time());
@@ -409,8 +403,8 @@ void JobsList::addJob(Command* cmd, bool isStopped = false)
 }
 
 void JobsList::printJobsList(){
-  for (int i=0; i<(this->jobs).size(); i++){
-    time_t current_time=time();
+  for (size_t i = 0; i < (this->jobs).size(); i++){
+    time_t current_time = time();
     double seconds_elapsed = difftime(jobs[i]->insert_time, current_time);
     if(jobs[i]->is_stopped){
       std::cout <<"["<< jobs[i]->job_id <<"] "<<(jobs[i]->cmd)->cmd_line<<" : "<<(jobs[i]->cmd)->pid<<" "<<seconds_elapsed<<"(stopped)"<<std::endl;  
@@ -422,21 +416,21 @@ void JobsList::printJobsList(){
 }
 
 void JobsList::killAllJobs(){
-  for(int i=0; i<(this->jobs).size(); i++){
+  for(size_t i=0; i<(this->jobs).size(); i++){
     delete(jobs[i]->cmd);
     delete(jobs[i]);
   }
 }
 
 void JobsList::void removeFinishedJobs(){
-  for(int i=0; i<this->jobs.size(); i++){
+  for(size_t i=0; i<this->jobs.size(); i++){
     if ((this->jobs)[i]->is_finished)
       (this->jobs).erase(i);
     }
   }
 
 JobEntry * JobsList::getJobById(int jobId){
-  for(int i=0; i<(this->jobs).size(); i++){
+  for(size_t i=0; i<(this->jobs).size(); i++){
     if(((this->jobs)[i]->job_id)==jobID){
       return (this->jobs)[i];
     }
@@ -444,7 +438,7 @@ JobEntry * JobsList::getJobById(int jobId){
 }
 
 void JobList::removeJobById(int jobId){
-  for(int i=0; i<(this->jobs).size(); i++){
+  for(size_t i=0; i<(this->jobs).size(); i++){
     if(((this->jobs)[i]->job_id)==jobID){
       (this->jobs).erase(i);
     }
@@ -463,7 +457,7 @@ JobEntry * JobList::getLastJob(int* lastJobId){
 }
 
 JobEntry * JobList::getLastStoppedJob(int *jobId){
-  for(int i=((this->jobs).size())-1; i>=0; i--){
+  for(size_t i=((this->jobs).size())-1; i>=0; i--){
     if((this->jobs)[i]->is_stopped){
       jobID=(this->jobs)[i]->job_id;
       return (this->jobs)[i];
