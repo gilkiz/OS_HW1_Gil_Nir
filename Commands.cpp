@@ -448,12 +448,13 @@ JobsList::JobEntry * JobsList::getLastJob(int* lastJobId){
 
 JobsList::JobEntry * JobsList::getLastStoppedJob(int *jobId)
 {
-  for(auto it = this->jobs.end();it!=this->jobs.begin(); it--)
+  vector<JobsList::JobEntry *>::reverse_iterator it = this->jobs.rbegin();
+  for (; it != this->jobs.rend(); it++)
   {
-    if(it->GetIsStopped())
+    if((*it)->GetIsStopped())
     {
-      *jobId = it->getJobID();
-      return it;
+      *jobId = (*it)->getJobID();
+      return (*it);
     }
   }
   *jobId = 0;
