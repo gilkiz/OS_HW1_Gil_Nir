@@ -89,34 +89,13 @@ void _removeBackgroundSign(char* cmd_line) {
   cmd_line[str.find_last_not_of(WHITESPACE, idx) + 1] = 0;
 }
 
-int _numOfStringsInArray(const char* cmd_line)
+// TODO: Add your implementation for classes in Commands.h
+
+SmallShell::SmallShell() : shellname("smash> "), last_directory(NULL), jobs_list(new JobsList()){};
+
+SmallShell::~SmallShell() 
 {
-  int cnt = 0;
-  std::string s = string(cmd_line);
-  size_t end = s.find_last_not_of(WHITESPACE);
-
-  if(cmd_line[0] != ' ') cnt++;
-
-  for (size_t i = 1; i <= end; i++)
-  {
-    if(cmd_line[i-1] == ' ' && cmd_line[i] != ' ')
-      cnt++;
-  }
-
-  return cnt;
-}
-
-// TODO: Add your implementation for classes in Commands.h 
-
-SmallShell::SmallShell() {
-// TODO: add your implementation
-  this->shellname = "smash> ";
-  this->last_directory = NULL;
-  this->jobs_list = new JobsList();
-}
-
-SmallShell::~SmallShell() {
-// TODO: add your implementation
+  delete jobs_list;
 }
 
 /**
@@ -166,7 +145,11 @@ void SmallShell::executeCommand(const char *cmd_line) {
   // Please note that you must fork smash process for some commands (e.g., external commands....)
 
   Command *cmd = CreateCommand(cmd_line);
-  cmd->execute();
+  if(cmd)
+  {
+    cmd->execute();
+    delete cmd;
+  }
 }
 
 std::string SmallShell::GetName()
@@ -186,16 +169,12 @@ char **SmallShell::GetLastDirectory()
 
 Command::Command(const char *cmd_line)
 {
-  int size = _numOfStringsInArray(cmd_line);
+  //int size = _numOfStringsInArray(cmd_line);
   this->cmd_line = cmd_line;
   char *command_line = const_cast<char *>(cmd_line);
   _removeBackgroundSign(command_line);
-  this->args = (char **)malloc(sizeof(char *) * size);
-  if(this->args == NULL)
-    throw std::bad_alloc(); // allocation error
-  if(size != _parseCommandLine(command_line, this->args))
-    ; // error
-  this->size_args = size;
+  this->args = new char *[COMMAND_MAX_ARGS + 1];
+  this->size_args = _parseCommandLine(command_line, this->args);
   this->pid = getpid();
 }
 
@@ -203,7 +182,7 @@ Command::~Command()
 {
   for (int i = 0; i < this->size_args; i++)
     free(this->args[i]);
-  free(this->args);
+  delete[] this->args;
   this->size_args = 0;
 }
 const char *Command::GetCmdLine()
@@ -224,20 +203,10 @@ ChangePromptCommand::ChangePromptCommand(const char *cmd_line, string* shell_nam
 
 void ChangePromptCommand::execute()
 {
-    int size = _numOfStringsInArray(cmd_line);
-    if(size <= 1)
-    {
+    if(this->size_args <= 1)
       *(this->shell_name) = "smash> ";
-      return;
-    }
-    char **args = (char **)malloc(sizeof(char *) * size);
-    if(args == NULL)
-      throw std::bad_alloc();
-    if (size != _parseCommandLine(cmd_line, args))
-    {
-      // error
-    }
-    *(this->shell_name) = string(args[1]) + "> ";
+    else
+      *(this->shell_name) = string(this->args[1]) + "> ";
 }
 
 // ShowPidCommand, showpid
@@ -391,6 +360,7 @@ void ForegroundCommand::execute()
 /*=====================================================*/
 /*=============JobsList & JobEntry Methods=============*/
 /*=====================================================*/
+
 JobsList::JobsList(){
   this->jobs = vector<JobsList::JobEntry*>();
 }
@@ -419,41 +389,50 @@ void JobsList::printJobsList(){
   }
 }
 
-void JobsList::killAllJobs(){  //*not right function probably
-  for(size_t i=0; i<(this->jobs).size(); i++){
-    delete(jobs[i]->GetCMD());
-    delete(jobs[i]);
+void JobsList::killAllJobs()
+{ 
+  std::cout << "smash: sending SIGKILL signal to " << this->jobs.size() << " jobs:" << std::endl;
+  for(auto it: this->jobs)
+  {
+    if(kill(it->getPID, 9) != 0)
+      {
+        perror("smash error: kill failed");
+        return;
+      }
   }
 }
 
 void JobsList::removeFinishedJobs(){
-  for(size_t i=0; i<this->jobs.size(); i++)
+  pid_t finished_pid;
+  while((finished_pid = waitpid(-1, nullptr, WNOHANG)) > 0)
   {
-    if ((this->jobs)[i]->GetIsFinished())
-    {
-      (this->jobs).erase((this->jobs)[i]);
-    }
+    JobsList::JobEntry *job = this->getJobByPID(finished_pid);
+    if(job)
+      removeJobById(job->getJobID());
   }
 }
 
-JobsList::JobEntry * JobsList::getJobById(int jobId){
-  for(size_t i=0; i<(this->jobs).size(); i++){
-    if(((this->jobs)[i]->getJobID())==jobId){
-      return (this->jobs)[i];
-    }
-  }
+JobsList::JobEntry * JobsList::getJobById(int jobId)
+{
+  for(auto it: this->jobs)
+    if(it->getJobID() == jobId)
+      return it;
+  return nullptr;
+}
+
+JobsList::JobEntry *JobsList::getJobByPID(int jobPID)
+{
+  for(auto it: this->jobs)
+    if(it.getPID() == jobPID)
+      return it;
   return nullptr;
 }
 
 void JobsList::removeJobById(int jobId)
 {
-  for(size_t i=0; i<(this->jobs).size(); i++)
-  {
-    if(((this->jobs)[i]->getJobID())==jobId)
-    {
-      (this->jobs).erase((this->jobs)[i]);
-    }
-  }
+  for (auto it: this->jobs)
+    if((it->getJobID())==jobId)
+      (this->jobs).erase(it);
 }
 
 JobsList::JobEntry * JobsList::getLastJob(int* lastJobId){
@@ -468,10 +447,11 @@ JobsList::JobEntry * JobsList::getLastJob(int* lastJobId){
 }
 
 JobsList::JobEntry * JobsList::getLastStoppedJob(int *jobId){
-  for(size_t i=((this->jobs).size())-1; i>=0; i--){
-    if((this->jobs)[i]->GetIsStopped()){
-      *jobId = (this->jobs)[i]->getJobID();
-      return (this->jobs)[i];
+  for(auto it = jobs_vector.end();it!=jobs_vector.begin(); it--)
+  {
+    if(it->GetIsStopped()){
+      *jobId = it->getJobID();
+      return it;
     }
   }
   *jobId = 0;
@@ -486,7 +466,6 @@ JobsList::JobEntry::JobEntry(Command *cmd, int jobid, bool isStopped)
   this->cmd = cmd;
   this->job_id = jobid;
   this->is_stopped = isStopped;
-  this->is_finished = false;
   this->insert_time = 0;
 }
 
@@ -506,10 +485,6 @@ int JobsList::JobEntry::getPID(){
 bool JobsList::JobEntry::GetIsStopped()
 {
   return this->is_stopped;
-}
-bool JobsList::JobEntry::GetIsFinished()
-{
-  return this->is_finished;
 }
 time_t JobsList::JobEntry::GetInsertTime()
 {

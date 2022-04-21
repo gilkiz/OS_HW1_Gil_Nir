@@ -111,7 +111,6 @@ class JobsList {
    Command *cmd;
    int job_id;
    bool is_stopped;
-   bool is_finished;
    time_t insert_time;
 
    public:
@@ -130,12 +129,13 @@ class JobsList {
 public:
   vector<JobEntry *> jobs;
   JobsList();
-  ~JobsList()=default; //???
+  ~JobsList() = default; //???
   void addJob(Command* cmd, bool isStopped = false);
   void printJobsList();
   void killAllJobs();
   void removeFinishedJobs();
   JobEntry * getJobById(int jobId);
+  JobEntry *getJobByPID(int jobPID);
   void removeJobById(int jobId);
   JobEntry * getLastJob(int* lastJobId);
   JobEntry *getLastStoppedJob(int *jobId);
