@@ -11,7 +11,6 @@
 #include <stdlib.h>
 #include <linux/limits.h>
 
-using JobsList::JobEntry;
 using std::string;
 using namespace std;
 
@@ -277,7 +276,7 @@ void ChangeDirCommand::execute()
       return;
     }
     char *cd;
-    if (this->args[1] == '-')
+    if (sizeof(this->args[1]) == 1 && (this->args[1])[0] == '-')
     {
       if(this->last_directory == NULL) 
       {
@@ -335,7 +334,7 @@ void KillCommand::execute()
     std::cout << "smash error: kill: invalid arguments" << std::endl;
     return;
   }
-  JobEntry *job = this->jobs->getJobById(jobid);
+  JobsList::JobEntry *job = this->jobs->getJobById(jobid);
   if(job == nullptr)
   {
     std::cout << "smash error: kill: job-id " << jobid << " does not exist" << std::endl;
@@ -388,7 +387,7 @@ void ForegroundCommand::execute()
 /*=============JobsList & JobEntry Methods=============*/
 /*=====================================================*/
 JobsList::JobsList(){
-  this->jobs = new vector<JobEntry*>();
+  this->jobs = new vector<JobsList::JobEntry*>();
 }
 
 void JobsList::addJob(Command* cmd, bool isStopped = false)
@@ -429,7 +428,7 @@ void JobsList::void removeFinishedJobs(){
     }
   }
 
-JobEntry * JobsList::getJobById(int jobId){
+JobsList::JobEntry * JobsList::getJobById(int jobId){
   for(size_t i=0; i<(this->jobs).size(); i++){
     if(((this->jobs)[i]->job_id)==jobID){
       return (this->jobs)[i];
@@ -445,18 +444,18 @@ void JobList::removeJobById(int jobId){
   }
 }
 
-JobEntry * JobList::getLastJob(int* lastJobId){
+JobsList::JobEntry * JobList::getLastJob(int* lastJobId){
   int j=(this->jobs).size();
   if(j==0){
     lastJobId = nullptr;
     return nullptr;
   }
-  JobEntry* temp=(this->jobs)[j];
+  JobsList::JobEntry* temp=(this->jobs)[j];
   *lastJobId = temp->job_id;
   return temp;
 }
 
-JobEntry * JobList::getLastStoppedJob(int *jobId){
+JobsList::JobEntry * JobList::getLastStoppedJob(int *jobId){
   for(size_t i=((this->jobs).size())-1; i>=0; i--){
     if((this->jobs)[i]->is_stopped){
       jobID=(this->jobs)[i]->job_id;
