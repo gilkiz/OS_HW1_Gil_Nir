@@ -373,7 +373,7 @@ void ForegroundCommand::execute()
 
 BackgroundCommand::BackgroundCommand(const char *cmd_line, JobsList *jobs) : BuiltInCommand(cmd_line), jobs(jobs){};
 
-BackgroundCommand::execute()
+void BackgroundCommand::execute()
 {
   JobsList::JobEntry *job;
   int jobid = 0;
