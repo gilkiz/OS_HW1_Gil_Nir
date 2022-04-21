@@ -130,6 +130,8 @@ Command * SmallShell::CreateCommand(const char* cmd_line) {
     is_background = true;
     _removeBackgroundSign(command_line);
   }
+  if(is_background) //to deleteee
+    ;
   string cmd_s = _trim(string(command_line));
   string firstWord = cmd_s.substr(0, cmd_s.find_first_of(" \n"));
   
@@ -204,7 +206,10 @@ Command::~Command()
   free(this->args);
   this->size_args = 0;
 }
-
+const char *Command::GetCmdLine()
+{
+  return this->cmd_line;
+}
 pid_t Command::getPID()
 {
   return this->pid;
@@ -387,50 +392,50 @@ void ForegroundCommand::execute()
 /*=============JobsList & JobEntry Methods=============*/
 /*=====================================================*/
 JobsList::JobsList(){
-  this->jobs = new vector<JobsList::JobEntry*>();
+  this->jobs = vector<JobsList::JobEntry*>();
 }
 
-void JobsList::addJob(Command* cmd, bool isStopped = false)
+void JobsList::addJob(Command* cmd, bool isStopped)
 {
   int available_job_id = 1;
   this->getLastJob(&available_job_id);
   available_job_id++;
   JobsList::JobEntry *new_job = new JobsList::JobEntry(cmd, available_job_id, isStopped);
-  new_job->setTime(time());
+  new_job->setTime();
   this->jobs.push_back(new_job);
-
 }
 
 void JobsList::printJobsList(){
   for (size_t i = 0; i < (this->jobs).size(); i++){
-    time_t current_time = time();
-    double seconds_elapsed = difftime(jobs[i]->insert_time, current_time);
-    if(jobs[i]->is_stopped){
-      std::cout <<"["<< jobs[i]->job_id <<"] "<<(jobs[i]->cmd)->cmd_line<<" : "<<(jobs[i]->cmd)->pid<<" "<<seconds_elapsed<<"(stopped)"<<std::endl;  
+    time_t current_time;
+    time(&current_time);
+    double seconds_elapsed = difftime(jobs[i]->GetInsertTime(), current_time);
+    if(jobs[i]->GetIsStopped()){
+      std::cout <<"["<< jobs[i]->getJobID() <<"] "<<(jobs[i]->GetCMD())->GetCmdLine()<<" : "<<(jobs[i]->GetCMD())->getPID()<<" "<<seconds_elapsed<<"(stopped)"<<std::endl;  
     }
     else{
-      std::cout <<"["<< jobs[i]->job_id <<"] "<<(jobs[i]->cmd)->cmd_line<<" : "<<(jobs[i]->cmd)->pid<<" "<<seconds_elapsed<<std::endl;
+      std::cout <<"["<< jobs[i]->getJobID() <<"] "<<(jobs[i]->GetCMD())->GetCmdLine()<<" : "<<(jobs[i]->GetCMD())->getPID()<<" "<<seconds_elapsed<<std::endl;
     }
   }
 }
 
-void JobsList::killAllJobs(){
+void JobsList::killAllJobs(){  //*not right function probably
   for(size_t i=0; i<(this->jobs).size(); i++){
-    delete(jobs[i]->cmd);
+    delete(jobs[i]->GetCMD());
     delete(jobs[i]);
   }
 }
 
 void JobsList::void removeFinishedJobs(){
   for(size_t i=0; i<this->jobs.size(); i++){
-    if ((this->jobs)[i]->is_finished)
+    if ((this->jobs)[i]->GetIsFinished())
       (this->jobs).erase(i);
     }
   }
 
 JobsList::JobEntry * JobsList::getJobById(int jobId){
   for(size_t i=0; i<(this->jobs).size(); i++){
-    if(((this->jobs)[i]->job_id)==jobID){
+    if(((this->jobs)[i]->getJobID())==jobID){
       return (this->jobs)[i];
     }
   }
@@ -438,7 +443,7 @@ JobsList::JobEntry * JobsList::getJobById(int jobId){
 
 void JobList::removeJobById(int jobId){
   for(size_t i=0; i<(this->jobs).size(); i++){
-    if(((this->jobs)[i]->job_id)==jobID){
+    if(((this->jobs)[i]->getJobID())==jobID){
       (this->jobs).erase(i);
     }
   }
@@ -451,18 +456,18 @@ JobsList::JobEntry * JobList::getLastJob(int* lastJobId){
     return nullptr;
   }
   JobsList::JobEntry* temp=(this->jobs)[j];
-  *lastJobId = temp->job_id;
+  *lastJobId = temp->getJobID();
   return temp;
 }
 
 JobsList::JobEntry * JobList::getLastStoppedJob(int *jobId){
   for(size_t i=((this->jobs).size())-1; i>=0; i--){
-    if((this->jobs)[i]->is_stopped){
-      jobID=(this->jobs)[i]->job_id;
+    if((this->jobs)[i]->GetIsStopped()){
+      jobID = (this->jobs)[i]->getJobID();
       return (this->jobs)[i];
     }
   }
-  jobID=nullptr;
+  jobID = nullptr;
   return nullptr;
 }
 
@@ -481,13 +486,28 @@ JobsList::JobEntry::JobEntry(Command *cmd, int jobid, bool isStopped)
 JobsList::JobEntry::~JobEntry(){
   delete(this->cmd);
 }
-
+Command * JobsList::JobEntry::GetCMD()
+{
+  return this->cmd;
+}
 int JobsList::JobEntry::getJobID(){
   return this->job_id;
 }
 int JobsList::JobEntry::getPID(){
   return this->cmd->getPID();
 }
-void JobsList::JobsEntry::setTime(time_t new_time){
-  this->insert_time=new_time;
+bool JobsList::JobEntry::GetIsStopped()
+{
+  return this->is_stopped;
+}
+bool JobsList::JobEntry::GetIsFinished()
+{
+  return this->is_finished;
+}
+time_t JobsList::JobEntry::GetInsertTime()
+{
+  return this->insert_time;
+}
+void JobsList::JobsEntry::setTime(){
+  time(&(this->insert_time));
 }
