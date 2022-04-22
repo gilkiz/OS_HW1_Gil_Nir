@@ -15,14 +15,12 @@ class Command {
    char **args;
    const char *cmd_line;
    int size_args;
-   pid_t pid;
 
  public:
    Command(const char *cmd_line);
    virtual ~Command();
    virtual void execute() = 0;
    const char *GetCmdLine();
-   pid_t getPID();
    // virtual void prepare();
    // virtual void cleanup();
    //  TODO: Add your extra methods if needed
@@ -36,7 +34,7 @@ class BuiltInCommand : public Command {
 
 class ExternalCommand : public Command {
  public:
-  ExternalCommand(const char* cmd_line);
+  ExternalCommand(const char* cmd_line) : Command(cmd_line) {};
   virtual ~ExternalCommand() {}
   void execute() override;
 };
@@ -87,7 +85,7 @@ class GetCurrDirCommand : public BuiltInCommand {
 class ShowPidCommand : public BuiltInCommand {
   int pid;
  public:
-  ShowPidCommand(const char* cmd_line);
+  ShowPidCommand(const char* cmd_line) : BuiltInCommand::BuiltInCommand(cmd_line){};
   virtual ~ShowPidCommand() = default;
   void execute() override;
 };
@@ -112,15 +110,17 @@ class JobsList {
    // TODO: Add your data members
    Command *cmd;
    int job_id;
+   pid_t pid;
    bool is_stopped;
    time_t insert_time;
 
    public:
-    JobEntry(Command *cmd, int jobid, bool isStopped);
+    JobEntry(Command *cmd, int jobid, pid_t pid, bool isStopped) : 
+      cmd(cmd), job_id(jobid), pid(pid), is_stopped(isStopped), insert_time(0){};
     ~JobEntry();
     Command *GetCMD();
     int getJobID();
-    int getPID();
+    pid_t getPID();
     bool IsStopped();
     void SwitchIsStopped();
     time_t GetInsertTime();
@@ -132,14 +132,15 @@ public:
   vector<JobEntry *> jobs;
   JobsList();
   ~JobsList() = default; //???
-  void addJob(Command* cmd, bool isStopped = false);
+  void addJob(Command* cmd, pid_t pid, bool isStopped = false);
   void printJobsList();
   void killAllJobs();
   void removeFinishedJobs();
   JobEntry * getJobById(int jobId);
   JobEntry *getJobByPID(int jobPID);
   void removeJobById(int jobId);
-  JobEntry * getLastJob(int* lastJobId);
+  void removeJobbyPid(pid_t pid);
+  JobEntry *getLastJob(int *lastJobId);
   JobEntry *getLastStoppedJob(int *jobId);
 };
 
@@ -220,6 +221,7 @@ class SmallShell {
   void executeCommand(const char* cmd_line);
   std::string GetName();
   char **GetLastDirectory();
+  JobsList *GetJobsList();
   // TODO: add extra methods as needed
 };
 

@@ -134,7 +134,7 @@ Command * SmallShell::CreateCommand(const char* cmd_line) {
     return new QuitCommand(cmd_line, this->jobs_list);
   else
 
-    return nullptr;
+    return new ExternalCommand(cmd_line);
 }
 
 void SmallShell::executeCommand(const char *cmd_line) {
@@ -161,6 +161,12 @@ char **SmallShell::GetLastDirectory()
 {
   return &(this->last_directory);
 }
+
+JobsList *SmallShell::GetJobsList()
+{
+  return this->jobs_list;
+}
+
 /*======================================================*/
 /*================== Commands Methods ==================*/
 /*======================================================*/
@@ -175,7 +181,6 @@ Command::Command(const char *cmd_line)
   _removeBackgroundSign(command_line);
   this->args = new char *[COMMAND_MAX_ARGS + 1];
   this->size_args = _parseCommandLine(command_line, this->args);
-  this->pid = getpid();
 }
 
 Command::~Command()
@@ -188,10 +193,6 @@ Command::~Command()
 const char *Command::GetCmdLine()
 {
   return this->cmd_line;
-}
-pid_t Command::getPID()
-{
-  return this->pid;
 }
 
 // ChangePromptCommand, chprompt
@@ -211,14 +212,9 @@ void ChangePromptCommand::execute()
 
 // ShowPidCommand, showpid
 
-ShowPidCommand::ShowPidCommand(const char* cmd_line) : BuiltInCommand::BuiltInCommand(cmd_line)
-{
-  this->pid = getpid();
-}
-
 void ShowPidCommand::execute()
 {
-  std::cout << "smash pid is " << this->pid << std::endl;
+  std::cout << "smash pid is " << getpid() << std::endl;
 }
 
 // GetCurrDirCommand, pwd
@@ -435,12 +431,12 @@ JobsList::JobsList(){
   this->jobs = vector<JobsList::JobEntry*>();
 }
 
-void JobsList::addJob(Command* cmd, bool isStopped)
+void JobsList::addJob(Command* cmd, pid_t pid , bool isStopped)
 {
   int available_job_id = 1;
   this->getLastJob(&available_job_id);
   available_job_id++;
-  JobsList::JobEntry *new_job = new JobsList::JobEntry(cmd, available_job_id, isStopped);
+  JobsList::JobEntry *new_job = new JobsList::JobEntry(cmd->cmd_line, available_job_id, pid, isStopped);
   new_job->setTime();
   this->jobs.push_back(new_job);
 }
@@ -451,10 +447,10 @@ void JobsList::printJobsList(){
     time(&current_time);
     double seconds_elapsed = difftime(jobs[i]->GetInsertTime(), current_time);
     if(jobs[i]->IsStopped()){
-      std::cout <<"["<< jobs[i]->getJobID() <<"] "<<(jobs[i]->GetCMD())->GetCmdLine()<<" : "<<(jobs[i]->GetCMD())->getPID()<<" "<<seconds_elapsed<<"(stopped)"<<std::endl;  
+      std::cout <<"["<< jobs[i]->getJobID() <<"] "<<(jobs[i]->GetCMD())->GetCmdLine()<<" : "<<(jobs[i]->getPID<<" "<<seconds_elapsed<<"(stopped)"<<std::endl;  
     }
     else{
-      std::cout <<"["<< jobs[i]->getJobID() <<"] "<<(jobs[i]->GetCMD())->GetCmdLine()<<" : "<<(jobs[i]->GetCMD())->getPID()<<" "<<seconds_elapsed<<std::endl;
+      std::cout <<"["<< jobs[i]->getJobID() <<"] "<<(jobs[i]->GetCMD())->GetCmdLine()<<" : "<<(jobs[i]->getPID()<<" "<<seconds_elapsed<<std::endl;
     }
   }
 }
@@ -505,6 +501,13 @@ void JobsList::removeJobById(int jobId)
       (this->jobs).erase(it);
 }
 
+void JobsList::removeJobbyPid(pid_t pid)
+{
+  for (auto it = this->jobs.begin(); it != this->jobs.end(); it++)
+    if(((*it)->getPID() == pid)
+      (this->jobs).erase(it);
+}
+
 JobsList::JobEntry * JobsList::getLastJob(int* lastJobId){
   int j=(this->jobs).size();
   if(j==0){
@@ -534,14 +537,6 @@ JobsList::JobEntry * JobsList::getLastStoppedJob(int *jobId)
 
 //=========================Job Entry=============================
 
-JobsList::JobEntry::JobEntry(Command *cmd, int jobid, bool isStopped)
-{
-  this->cmd = cmd;
-  this->job_id = jobid;
-  this->is_stopped = isStopped;
-  this->insert_time = 0;
-}
-
 JobsList::JobEntry::~JobEntry(){
   delete(this->cmd);
 }
@@ -552,8 +547,8 @@ Command * JobsList::JobEntry::GetCMD()
 int JobsList::JobEntry::getJobID(){
   return this->job_id;
 }
-int JobsList::JobEntry::getPID(){
-  return this->cmd->getPID();
+pid_t JobsList::JobEntry::getPID(){
+  return this->pid;
 }
 bool JobsList::JobEntry::IsStopped()
 {
@@ -564,13 +559,13 @@ void JobsList::JobEntry::SwitchIsStopped()
   this->is_stopped = !(this->is_stopped);
   if(this->is_stopped)
   {
-    if(kill(this->cmd->getPID(), SIGSTOP) != 0)
+    if(kill(this->pid, SIGSTOP) != 0)
     {
       perror("smash error: kill failed");
       return;
     }
   }
-  else if(kill(this->cmd->getPID(), SIGCONT) != 0)
+  else if(kill(this->pid, SIGCONT) != 0)
   {
     perror("smash error: kill failed");
     return;
@@ -582,4 +577,34 @@ time_t JobsList::JobEntry::GetInsertTime()
 }
 void JobsList::JobEntry::setTime(){
   time(&(this->insert_time));
+}
+
+/*============================================================*/
+/*======================External Command======================*/
+/*============================================================*/
+
+void ExternalCommand::execute()
+{
+  SmallShell &smash = SmallShell::getInstance();
+  pid_t pid = fork();
+  if(pid < 0)
+    perror("smash error: fork failed");
+  else if(pid == 0) // son (external)
+  {
+    execlp("/bin/bash", "bash", "-c", _removeBackgroundSign(const_cast<char *>(this->cmd_line)), NULL);
+    perror("smash error: execlp failed");
+    exit(0);
+  }
+  else // father (smash)
+  {
+    if(_isBackgroundCommand(this->cmd_line))
+      smash.GetJobsList()->addJob(this ,pid);
+    else
+    {
+      int status;
+      waitpid(pid, &status, WUNTRACED);
+      if(WIFEXITED(status) || WIFSIGNALED(status))
+        smash.GetJobsList()->removeJobByPid(pid);
+    }
+  }
 }
