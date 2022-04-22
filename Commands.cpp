@@ -436,7 +436,7 @@ void JobsList::addJob(Command* cmd, pid_t pid , bool isStopped)
   int available_job_id = 1;
   this->getLastJob(&available_job_id);
   available_job_id++;
-  JobsList::JobEntry *new_job = new JobsList::JobEntry(cmd->cmd_line, available_job_id, pid, isStopped);
+  JobsList::JobEntry *new_job = new JobsList::JobEntry(cmd, available_job_id, pid, isStopped);
   new_job->setTime();
   this->jobs.push_back(new_job);
 }
@@ -447,10 +447,12 @@ void JobsList::printJobsList(){
     time(&current_time);
     double seconds_elapsed = difftime(jobs[i]->GetInsertTime(), current_time);
     if(jobs[i]->IsStopped()){
-      std::cout <<"["<< jobs[i]->getJobID() <<"] "<<(jobs[i]->GetCMD())->GetCmdLine()<<" : "<<(jobs[i]->getPID<<" "<<seconds_elapsed<<"(stopped)"<<std::endl;  
+      std::cout << "[" << jobs[i]->getJobID() << "] "<< (jobs[i]->GetCMD())->GetCmdLine() <<
+        " : "<< (jobs[i]->getPID() << " " << seconds_elapsed << "(stopped)" << std::endl;  
     }
     else{
-      std::cout <<"["<< jobs[i]->getJobID() <<"] "<<(jobs[i]->GetCMD())->GetCmdLine()<<" : "<<(jobs[i]->getPID()<<" "<<seconds_elapsed<<std::endl;
+      std::cout << "[" << jobs[i]->getJobID() << "] "<< (jobs[i]->GetCMD())->GetCmdLine() <<
+      " : " << jobs[i]->getPID() << " " << seconds_elapsed << std::endl;
     }
   }
 }
@@ -504,7 +506,7 @@ void JobsList::removeJobById(int jobId)
 void JobsList::removeJobbyPid(pid_t pid)
 {
   for (auto it = this->jobs.begin(); it != this->jobs.end(); it++)
-    if(((*it)->getPID() == pid)
+    if(((*it)->getPID()) == pid)
       (this->jobs).erase(it);
 }
 
@@ -591,7 +593,9 @@ void ExternalCommand::execute()
     perror("smash error: fork failed");
   else if(pid == 0) // son (external)
   {
-    execlp("/bin/bash", "bash", "-c", _removeBackgroundSign(const_cast<char *>(this->cmd_line)), NULL);
+    char *command_line = const_cast<char *>(this->cmd_line);
+    _removeBackgroundSign(command_line);
+    execlp("/bin/bash", "bash", "-c", command_line, NULL);
     perror("smash error: execlp failed");
     exit(0);
   }
