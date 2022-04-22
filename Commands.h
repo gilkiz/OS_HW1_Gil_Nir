@@ -139,7 +139,7 @@ public:
   JobEntry * getJobById(int jobId);
   JobEntry *getJobByPID(int jobPID);
   void removeJobById(int jobId);
-  void removeJobByPd(pid_t pid);
+  void removeJobByPid(pid_t pid);
   JobEntry *getLastJob(int *lastJobId);
   JobEntry *getLastStoppedJob(int *jobId);
 };
