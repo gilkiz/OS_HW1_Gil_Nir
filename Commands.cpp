@@ -448,7 +448,7 @@ void JobsList::printJobsList(){
     double seconds_elapsed = difftime(jobs[i]->GetInsertTime(), current_time);
     if(jobs[i]->IsStopped()){
       std::cout << "[" << jobs[i]->getJobID() << "] "<< (jobs[i]->GetCMD())->GetCmdLine() <<
-        " : "<< (jobs[i]->getPID() << " " << seconds_elapsed << "(stopped)" << std::endl;  
+        " : "<< jobs[i]->getPID() << " " << seconds_elapsed << "(stopped)" << std::endl;  
     }
     else{
       std::cout << "[" << jobs[i]->getJobID() << "] "<< (jobs[i]->GetCMD())->GetCmdLine() <<
@@ -503,7 +503,7 @@ void JobsList::removeJobById(int jobId)
       (this->jobs).erase(it);
 }
 
-void JobsList::removeJobbyPid(pid_t pid)
+void JobsList::removeJobByPid(pid_t pid)
 {
   for (auto it = this->jobs.begin(); it != this->jobs.end(); it++)
     if(((*it)->getPID()) == pid)
