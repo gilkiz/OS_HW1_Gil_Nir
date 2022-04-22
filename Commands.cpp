@@ -593,9 +593,7 @@ void ExternalCommand::execute()
     perror("smash error: fork failed");
   else if(pid == 0) // son (external)
   {
-    char *command_line = const_cast<char *>(this->cmd_line);
-    _removeBackgroundSign(command_line);
-    execlp("/bin/bash", "bash", "-c", command_line, NULL);
+    execlp("/bin/bash", "bash", "-c", const_cast<char *>(this->cmd_line), NULL);
     perror("smash error: execlp failed");
     exit(0);
   }
