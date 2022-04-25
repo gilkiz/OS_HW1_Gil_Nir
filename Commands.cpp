@@ -110,6 +110,10 @@ Command * SmallShell::CreateCommand(const char* cmd_line) {
   string cmd_s = _trim(string(command_line));
   string firstWord = cmd_s.substr(0, cmd_s.find_first_of(" \n"));
   
+  if(cmd_s.find_first_of(" > ") || cmd_s.find_first_of(" >> ")){
+
+  }
+
   if(firstWord.compare("chprompt") == 0)
     return new ChangePromptCommand(cmd_line, &(this->shellname));
   else if (firstWord.compare("pwd") == 0)
@@ -496,7 +500,7 @@ JobsList::JobEntry *JobsList::getJobByPID(int jobPID)
 
 void JobsList::removeJobById(int jobId)
 {
-  for (auto it = this->jobs.begin(); it != this->jobs.end(); it++)
+  for(auto it = this->jobs.begin(); it != this->jobs.end(); it++)
     if(((*it)->getJobID()) == jobId)
       (this->jobs).erase(it);
 }
