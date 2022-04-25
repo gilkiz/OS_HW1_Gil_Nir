@@ -1,0 +1,3 @@
+/home/student/Desktop/HW1/HW1/build/CMakeFiles/rebuild_cache.dir
+/home/student/Desktop/HW1/HW1/build/CMakeFiles/os_hw1.dir
+/home/student/Desktop/HW1/HW1/build/CMakeFiles/edit_cache.dir
