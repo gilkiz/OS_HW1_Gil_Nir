@@ -107,8 +107,6 @@ Command * SmallShell::CreateCommand(const char* cmd_line) {
   if (_isBackgroundCommand(command_line))
     _removeBackgroundSign(command_line);
 
-  std::cout << cmd_line << std::endl; //check
-
   string cmd_s = _trim(string(command_line));
   string firstWord = cmd_s.substr(0, cmd_s.find_first_of(" \n"));
   
@@ -131,10 +129,7 @@ Command * SmallShell::CreateCommand(const char* cmd_line) {
   else if (firstWord.compare("quit") == 0)
     return new QuitCommand(cmd_line, this->jobs_list);
   else
-  {
-    std::cout << cmd_line << std::endl; //check
     return new ExternalCommand(cmd_line);
-  }
 }
 
 void SmallShell::executeCommand(const char *cmd_line) {
@@ -281,7 +276,9 @@ JobsCommand::JobsCommand(const char* cmd_line, JobsList* jobs) : BuiltInCommand:
 void JobsCommand::execute()
 {
   this->jobs->removeFinishedJobs();
+  std::cout << "first pass" << std::endl;
   this->jobs->printJobsList();
+  std::cout << "second pass" << std::endl;
 }
 
 // KillCommand, kill
@@ -588,7 +585,6 @@ void JobsList::JobEntry::setTime(){
 
 void ExternalCommand::execute()
 {
-  std::cout << this->cmd_line << std::endl;
   SmallShell &smash = SmallShell::getInstance();
   pid_t pid = fork();
   if(pid < 0)
