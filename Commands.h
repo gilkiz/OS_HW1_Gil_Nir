@@ -20,7 +20,7 @@ class Command {
    Command(const char *cmd_line);
    virtual ~Command();
    virtual void execute() = 0;
-   const char *GetCmdLine();
+   string GetCmdLine();
    // virtual void prepare();
    // virtual void cleanup();
    //  TODO: Add your extra methods if needed
@@ -108,17 +108,16 @@ class JobsList {
  public:
   class JobEntry {
    // TODO: Add your data members
-   Command *cmd;
+   string cmd_line;
    int job_id;
    pid_t pid;
    bool is_stopped;
    time_t insert_time;
 
    public:
-    JobEntry(Command *cmd, int jobid, pid_t pid, bool isStopped) : 
-      cmd(cmd), job_id(jobid), pid(pid), is_stopped(isStopped), insert_time(0){};
-    ~JobEntry();
-    Command *GetCMD();
+    JobEntry(string cmd_line, int jobid, pid_t pid, bool isStopped) : 
+      cmd_line(cmd_line), job_id(jobid), pid(pid), is_stopped(isStopped), insert_time(0){};
+    string GetCmdLine();
     int getJobID();
     pid_t getPID();
     bool IsStopped();
@@ -129,7 +128,7 @@ class JobsList {
  // TODO: Add your data members
 
 public:
-  vector<JobEntry *> jobs;
+  vector<JobEntry> jobs;
   JobsList();
   ~JobsList() = default; //???
   void addJob(Command* cmd, pid_t pid, bool isStopped = false);
