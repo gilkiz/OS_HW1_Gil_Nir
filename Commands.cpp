@@ -177,7 +177,8 @@ Command::Command(const char *cmd_line)
 {
   //int size = _numOfStringsInArray(cmd_line);
   this->cmd_line = cmd_line;
-  char *command_line = const_cast<char *>(cmd_line);
+  char *command_line = new char[COMMAND_ARGS_MAX_LENGTH];
+  if(strcpy(command_line, cmd_line) == NULL) // error
   _removeBackgroundSign(command_line);
   this->args = new char *[COMMAND_MAX_ARGS + 1];
   this->size_args = _parseCommandLine(command_line, this->args);
