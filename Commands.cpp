@@ -102,15 +102,13 @@ SmallShell::~SmallShell()
 * Creates and returns a pointer to Command class which matches the given command line (cmd_line)
 */
 Command * SmallShell::CreateCommand(const char* cmd_line) {
-  char *command_line = const_cast<char *>(cmd_line);
-  bool is_background = false;
-  if (_isBackgroundCommand(cmd_line))
-  {
-    is_background = true;
+  char *command_line = new char[COMMAND_ARGS_MAX_LENGTH];
+  if(strcpy(command_line, cmd_line) == NULL) // error
+  if (_isBackgroundCommand(command_line))
     _removeBackgroundSign(command_line);
-  }
-  if(is_background) //to deleteee
-    ;
+
+  std::cout << cmd_line << std::endl; //check
+
   string cmd_s = _trim(string(command_line));
   string firstWord = cmd_s.substr(0, cmd_s.find_first_of(" \n"));
   
