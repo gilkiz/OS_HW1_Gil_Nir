@@ -131,7 +131,10 @@ Command * SmallShell::CreateCommand(const char* cmd_line) {
   else if (firstWord.compare("quit") == 0)
     return new QuitCommand(cmd_line, this->jobs_list);
   else
+  {
+    std::cout << cmd_line << std::endl; //check
     return new ExternalCommand(cmd_line);
+  }
 }
 
 void SmallShell::executeCommand(const char *cmd_line) {
@@ -584,7 +587,7 @@ void JobsList::JobEntry::setTime(){
 
 void ExternalCommand::execute()
 {
-  std::cout << const_cast<char *>(this->cmd_line) << std::endl;
+  std::cout << this->cmd_line << std::endl;
   SmallShell &smash = SmallShell::getInstance();
   pid_t pid = fork();
   if(pid < 0)
