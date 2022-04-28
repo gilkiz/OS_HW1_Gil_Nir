@@ -4,12 +4,15 @@
 #include <vector>
 #include <sstream>
 #include <sys/wait.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 #include <iomanip>
 #include "Commands.h"
 #include <time.h>
 #include <utime.h>
 #include <stdlib.h>
 #include <linux/limits.h>
+#include <fcntl.h>
 
 using std::string;
 using namespace std;
@@ -28,14 +31,37 @@ using namespace std;
 #define SYS_CALL(syscall, name)                         \
   do                                                    \
   {                                                     \
-    if(syscall != 0)                                    \
+    if(syscall == -1)                                    \
     {                                                   \
       string er = string("smash error: ") + string(name) + string(" failed");   \
       perror((char*)er.c_str());                              \
       return;                                           \
     }                                                   \
   } while (0)
-  
+
+#define SYS_CALL_PTR(syscall, name)                         \
+  do                                                    \
+  {                                                     \
+    if(syscall == NULL)                                    \
+    {                                                   \
+      string er = string("smash error: ") + string(name) + string(" failed");   \
+      perror((char*)er.c_str());                              \
+      return;                                           \
+    }                                                   \
+  } while (0)
+
+#define SYS_CALL_AND_RESTORE_FD(syscall, name, old_fd, new_fd)                         \
+  do                                                    \
+  {                                                     \
+    if(syscall == -1)                                    \
+    {                                                   \
+      string er = string("smash error: ") + string(name) + string(" failed");   \
+      perror((char*)er.c_str());                    \
+      SYS_CALL(dup2(old_fd, new_fd), "dup2");                           \
+      return;                                           \
+    }                                                   \
+  } while (0)
+
 
 const std::string WHITESPACE = " \n\r\t\f\v";
 
@@ -122,17 +148,9 @@ Command * SmallShell::CreateCommand(const char* cmd_line) {
   string cmd_s = _trim(string(command_line));
   string firstWord = cmd_s.substr(0, cmd_s.find_first_of(" \n"));
   
-<<<<<<< HEAD
-  if(cmd_s.find_first_of(" > ") || cmd_s.find_first_of(" >> ")){
-
-  }
-
-||||||| ca75f77
-=======
-  delete command_line;
-
->>>>>>> b60991879ddb96450eaf263dab84d9cdeea81312
-  if(firstWord.compare("chprompt") == 0)
+  if(cmd_s.find(" > ") != string::npos || cmd_s.find(" >> ") != string::npos)
+    return new RedirectionCommand(cmd_line);
+  else if(firstWord.compare("chprompt") == 0)
     return new ChangePromptCommand(cmd_line, &(this->shellname));
   else if (firstWord.compare("pwd") == 0)
     return new GetCurrDirCommand(cmd_line);
@@ -241,7 +259,7 @@ void ShowPidCommand::execute()
 void GetCurrDirCommand::execute()
 {
   char root[PATH_MAX];
-  SYS_CALL(getcwd(root, sizeof(root)), "getcwd");
+  SYS_CALL_PTR(getcwd(root, sizeof(root)), "getcwd");
   //if (getcwd(root, sizeof(root)) != NULL)
   std::cout << root << std::endl;
 }
@@ -258,7 +276,7 @@ void ChangeDirCommand::execute()
   if(this->size_args == 2)
   {
     char before_change_pwd[PATH_MAX];
-    SYS_CALL(getcwd(before_change_pwd, sizeof(before_change_pwd)), "getcwd");
+    SYS_CALL_PTR(getcwd(before_change_pwd, sizeof(before_change_pwd)), "getcwd");
     char *cd;
     if (sizeof(this->args[1]) == 1 && (this->args[1])[0] == '-')
     {
@@ -606,6 +624,7 @@ void ExternalCommand::execute()
   {
     char* cmd_line = (char*)this->GetCmdLine().c_str();
     _removeBackgroundSign(cmd_line);
+    SYS_CALL(setpgrp(), "setpgrp");
     execlp("/bin/bash", "bash", "-c", cmd_line, NULL);
     perror("smash error: execlp failed");
     exit(0);
@@ -622,4 +641,85 @@ void ExternalCommand::execute()
         smash.GetJobsList()->removeJobByPid(pid);
     }
   }
+}
+
+/*===========================================================*/
+/*====================Redirection Command====================*/
+/*===========================================================*/
+
+RedirectionCommand::RedirectionCommand(const char* cmd_line) : Command(cmd_line)
+{
+  if((string(this->cmd_line)).find(" > ") != string::npos)
+    this->is_append = false;
+  else this->is_append = true;
+
+  char *command_line = new char[COMMAND_ARGS_MAX_LENGTH];
+  if(strcpy(command_line, this->cmd_line) == NULL) // error
+  if (_isBackgroundCommand(command_line))
+    _removeBackgroundSign(command_line);
+  string cmd_s = _trim(string(command_line));
+  size_t i = cmd_s.find(" >> ");
+  if(this->is_append)
+  {
+    this->output_file = cmd_s.substr(i + 4).c_str();
+  }
+  else
+  {
+    i = cmd_s.find(" > ");
+    this->output_file = cmd_s.substr(i + 3).c_str();
+  }
+  this->command = cmd_s.substr(0, i).c_str();
+}
+
+void RedirectionCommand::execute()
+{
+  SmallShell& smash = SmallShell::getInstance();
+  int std_out = dup(STDOUT_FILENO);
+  if(std_out == -1)
+  {
+    perror("smash error: dup failed");
+    return;
+  }
+  int fd_file;
+  if(this->is_append) // >>
+    fd_file = open(this->output_file, O_RDWR | O_CREAT | O_APPEND, 0666);
+  else                // >
+    fd_file = open(this->output_file, O_RDWR | O_CREAT | O_TRUNC, 0666);
+  if(fd_file == -1)
+    {
+      perror("smash error: open failed");
+      return;
+    }
+  
+  SYS_CALL_AND_RESTORE_FD(close(STDOUT_FILENO), "close", std_out, STDOUT_FILENO);
+  SYS_CALL_AND_RESTORE_FD(dup2(fd_file, STDOUT_FILENO), "dup2", std_out, STDOUT_FILENO);
+  
+  smash.executeCommand(this->command);
+  SYS_CALL(dup2(std_out, STDOUT_FILENO), "dup2");
+}
+
+/*==========================================================*/
+/*=======================Tail Command=======================*/
+/*==========================================================*/
+
+void TailCommand::execute()
+{
+  int cnt = 10;
+  int file_index = 1;
+  if(this->size_args == 3)
+  {
+    cnt = atoi((string(this->args[1])).substr(1).c_str());
+    if(cnt == 0)
+    {
+      std::cout << "smash error: tail: invalid arguments" << std::endl;
+      return;
+    }
+    file_index = 2;
+  }
+  else if(this->size_args != 2)
+  {
+    std::cout << "smash error: tail: invalid arguments" << std::endl;
+    return;
+  }
+  int fd_file = open(this->args[file_index], O_RDONLY, 0666);
 }
