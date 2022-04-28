@@ -1,0 +1,3 @@
+/home/student/Desktop/HW1/HW1/build
+smash pid is 28069
+[1] sleep 1000& : 28134 3 secs

@@ -148,8 +148,10 @@ Command * SmallShell::CreateCommand(const char* cmd_line) {
   string cmd_s = _trim(string(command_line));
   string firstWord = cmd_s.substr(0, cmd_s.find_first_of(" \n"));
   
-  if(cmd_s.find(" > ") != string::npos || cmd_s.find(" >> ") != string::npos)
+  if(cmd_s.find(">") != string::npos || cmd_s.find(">>") != string::npos)
     return new RedirectionCommand(cmd_line);
+  else if(cmd_s.find("|") != string::npos || cmd_s.find("|&") != string::npos)
+    return new PipeCommand(cmd_line);
   else if(firstWord.compare("chprompt") == 0)
     return new ChangePromptCommand(cmd_line, &(this->shellname));
   else if (firstWord.compare("pwd") == 0)
@@ -168,6 +170,8 @@ Command * SmallShell::CreateCommand(const char* cmd_line) {
     return new BackgroundCommand(cmd_line, this->jobs_list);
   else if (firstWord.compare("quit") == 0)
     return new QuitCommand(cmd_line, this->jobs_list);
+  else if(firstWord.compare("tail") == 0)
+    return new TailCommand(cmd_line);
   else
     return new ExternalCommand(cmd_line);
 }
@@ -447,6 +451,8 @@ void QuitCommand::execute()
   exit(0);
 }
 
+
+
 /*=====================================================*/
 /*=============JobsList & JobEntry Methods=============*/
 /*=====================================================*/
@@ -696,6 +702,7 @@ void RedirectionCommand::execute()
   
   smash.executeCommand(this->command);
   SYS_CALL(dup2(std_out, STDOUT_FILENO), "dup2");
+  SYS_CALL(close(fd_file), "close");
 }
 
 /*==========================================================*/
@@ -721,5 +728,143 @@ void TailCommand::execute()
     std::cout << "smash error: tail: invalid arguments" << std::endl;
     return;
   }
-  int fd_file = open(this->args[file_index], O_RDONLY, 0666);
+  int fd_file;
+  SYS_CALL((fd_file = open(this->args[file_index], O_RDONLY)), "open");
+  char buffer;
+  int pos = 2, line_length = 0;
+  int size = lseek(fd_file, 0, SEEK_END);
+  while(pos <= size && cnt > 0)
+  {
+    //SYS_CALL(read(fd_file, &buffer, 1), "read");
+    SYS_CALL(lseek(fd_file, -pos, SEEK_END), "lseek");
+    pos++;
+    if(pos > size) break;
+    SYS_CALL(read(fd_file, &buffer, 1), "read");
+    while(buffer != '\n')
+    {
+      line_length++;
+      if(pos > size) break;
+      SYS_CALL(lseek(fd_file, -pos, SEEK_END), "lseek");
+      pos++;
+      SYS_CALL(read(fd_file, &buffer, 1), "read");
+    }
+    //SYS_CALL(lseek(fd_file, 1, SEEK_CUR), "lseek");
+    char* line = new char[line_length];
+    SYS_CALL(read(fd_file, line, line_length), "read");
+    std::cout << line << std::endl;
+    delete line;
+    line_length = 0;
+    cnt--;
+  }
+  SYS_CALL(close(fd_file), "close");
 }
+/*============================================================*/
+/*======================Special Commands======================*/
+/*============================================================*/
+
+PipeCommand::~PipeCommand() 
+{
+  delete this->cmd_line;
+}
+
+void PipeCommand::execute()
+{
+    SmallShell &smash = SmallShell::getInstance();
+    int fd[2];
+    SYS_CALL(pipe(fd) , "pipe");
+    std::string first_command = getFirstCommand(this->cmd_line);
+    std::string second_command = getSecondCommand(this->cmd_line); 
+
+    if(isWithAnd(this->GetCmdLine())) //* Meaning this is "|&" command
+    {
+      int first_son = fork();
+      if(first_son < 0)
+      {
+        perror("smash error: fork failed");
+        SYS_CALL(close(fd[0]),"close");
+        SYS_CALL(close(fd[1]),"close");
+      }
+      else if(first_son == 0)
+      { //first child
+        SYS_CALL(setpgrp(), "setpgrp");
+        SYS_CALL(dup2((fd[0]),STDIN_FILENO),"close");
+        SYS_CALL(close(fd[0]),"close");
+        SYS_CALL(close(fd[1]),"close");
+        smash.executeCommand(second_command.c_str()); 
+        exit(0);
+      }
+      int second_son = fork();
+      if(second_son < 0)
+      {
+        perror("smash error: fork failed");
+        SYS_CALL(close(fd[0]),"close");
+        SYS_CALL(close(fd[1]),"close");
+      }
+      if(second_son == 0)
+      { //second child
+        SYS_CALL(setpgrp(), "setpgrp");
+        SYS_CALL(dup2((fd[1]),STDERR_FILENO),"close");
+        SYS_CALL(close(fd[0]),"close");
+        SYS_CALL(close(fd[1]),"close");
+        smash.executeCommand(first_command.c_str());
+        exit(0);
+      }
+    }
+
+    else  //* Meaning this is "|" command
+    {
+      int first_son = fork();
+      if(first_son < 0)
+      {
+        SYS_CALL(close(fd[0]),"close");
+        SYS_CALL(close(fd[1]),"close");
+        perror("smash error: fork failed");
+      }
+      else if(first_son == 0)
+      { //first child
+        SYS_CALL(setpgrp(), "setpgrp");
+        SYS_CALL(dup2((fd[0]),STDIN_FILENO),"close");
+        SYS_CALL(close(fd[0]),"close");
+        SYS_CALL(close(fd[1]),"close");
+        smash.executeCommand(second_command.c_str()); 
+        exit(0);
+      }
+      int second_son = fork();
+      if(second_son < 0)
+      {
+        SYS_CALL(close(fd[0]),"close");
+        SYS_CALL(close(fd[1]),"close");
+        perror("smash error: fork failed");
+      }
+      if(second_son == 0)
+      { //second child
+        SYS_CALL(setpgrp(), "setpgrp");
+        SYS_CALL(dup2((fd[1]),STDOUT_FILENO),"close");
+        SYS_CALL(close(fd[0]),"close");
+        SYS_CALL(close(fd[1]),"close");
+        smash.executeCommand(first_command.c_str());
+        exit(0);
+      }
+    }
+    //close();
+}
+
+bool PipeCommand::isWithAnd(std::string stringToCheck)
+{
+  return(stringToCheck.find("|&"));
+}
+
+std::string PipeCommand::getFirstCommand(string whole_command)
+{
+  std::string str = str.erase(whole_command.find_first_of("|"),whole_command.size());
+  return(str);
+}
+
+std::string PipeCommand::getSecondCommand(string whole_command)
+{
+  whole_command.erase(2, whole_command.length());
+  whole_command = _trim(whole_command);
+  std::string str = str.erase(0,whole_command.find_first_of("&")+1);
+}
+
+
