@@ -40,7 +40,6 @@ class ExternalCommand : public Command {
 };
 
 class PipeCommand : public Command {
-  std::string cmd_line;
  public:
   PipeCommand(const char* cmd_line);
   virtual ~PipeCommand();
@@ -196,8 +195,8 @@ class TailCommand : public BuiltInCommand {
 
 class TouchCommand : public BuiltInCommand {
  public:
-  TouchCommand(const char* cmd_line);
-  virtual ~TouchCommand() {}
+  TouchCommand(const char* cmd_line) : BuiltInCommand(cmd_line){} 
+  virtual ~TouchCommand() = default ;
   void execute() override;
 };
 

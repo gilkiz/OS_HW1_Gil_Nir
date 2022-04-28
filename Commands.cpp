@@ -424,6 +424,27 @@ void QuitCommand::execute()
 }
 
 
+TouchCommand::execute()
+{
+    if(this->size_args != 2)
+    {
+      std::cout << "smash error: touch: invalid arguments" << std::endl;
+      return;
+    }
+
+    std::string file_name = std::string(this->args[0]);
+    std::string time_details = std::string(this->args[1]);
+    
+
+    if(//*utime(const char *filename, const struct utimbuf *times)==- 1)
+    {
+      //print error
+    }
+    
+}
+
+
+
 
 /*=====================================================*/
 /*=============JobsList & JobEntry Methods=============*/
@@ -735,5 +756,3 @@ std::string PipeCommand::getSecondCommand(std::string whole_command)
   _trim(str);
   return str;
 }
-
-
