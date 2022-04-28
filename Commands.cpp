@@ -122,16 +122,10 @@ Command * SmallShell::CreateCommand(const char* cmd_line) {
   string cmd_s = _trim(string(command_line));
   string firstWord = cmd_s.substr(0, cmd_s.find_first_of(" \n"));
   
-<<<<<<< HEAD
   if(cmd_s.find_first_of(" > ") || cmd_s.find_first_of(" >> ")){
 
   }
 
-||||||| ca75f77
-=======
-  delete command_line;
-
->>>>>>> b60991879ddb96450eaf263dab84d9cdeea81312
   if(firstWord.compare("chprompt") == 0)
     return new ChangePromptCommand(cmd_line, &(this->shellname));
   else if (firstWord.compare("pwd") == 0)
@@ -429,6 +423,8 @@ void QuitCommand::execute()
   exit(0);
 }
 
+
+
 /*=====================================================*/
 /*=============JobsList & JobEntry Methods=============*/
 /*=====================================================*/
@@ -623,3 +619,119 @@ void ExternalCommand::execute()
     }
   }
 }
+
+/*============================================================*/
+/*======================Special Commands======================*/
+/*============================================================*/
+
+
+PipeCommand::PipeCommand(const char* cmd_line)
+{
+  this->cmd_line = string(cmd_line);
+}
+
+PipeCommand::~PipeCommand() 
+{
+  delete this->cmd_line;
+}
+
+void PipeCommand::execute()
+{
+    SmallShell &smash = SmallShell::getInstance();
+    SYS_CALL(pipe(int fd[2]) , "pipe");
+    std::string first_command = getFirstCommand(this->cmd_line);
+    std::string second_command = getSecondCommand(this->cmd_line); 
+
+    if(isWithAnd(this->cmd_line)) //* Meaning this is "|&" command
+    {
+      int first_son = fork();
+      if(first_son < 0)
+      {
+        perror("smash error: fork failed");
+        SYS_CALL(close(fd[0]),"close");
+        SYS_CALL(close(fd[1]),"close");
+      }
+      else if(first_son == 0)
+      { //first child
+        SYS_CALL(setpgrp(), "setpgrp");
+        SYS_CALL(dup2((fd[0]),0),"close");
+        SYS_CALL(close(fd[0]),"close");
+        SYS_CALL(close(fd[1]),"close");
+        smash.executeCommand(second_command); 
+        exit(0);
+      }
+      int second_son = fork();
+      if(second_son < 0)
+      {
+        SYS_CALL(close(fd[0]),"close");
+        SYS_CALL(close(fd[1]),"close");
+        perror("smash error: fork failed");
+      }
+      if(second_son == 0)
+      { //second child
+        SYS_CALL(setpgrp(), "setpgrp");
+        SYS_CALL(dup2((fd[1]),2),"close");
+        SYS_CALL(close(fd[0]),"close");
+        SYS_CALL(close(fd[1]),"close");
+        smash.executeCommand(first_command);
+        exit(0);
+      }
+    }
+
+    else  //* Meaning this is "|" command
+    {
+      int first_son = fork();
+      if(first_son < 0)
+      {
+        SYS_CALL(close(fd[0]),"close");
+        SYS_CALL(close(fd[1]),"close");
+        perror("smash error: fork failed");
+      }
+      else if(first_son == 0)
+      { //first child
+        SYS_CALL(setpgrp(), "setpgrp");
+        SYS_CALL(dup2((fd[0]),0),"close");
+        SYS_CALL(close(fd[0]),"close");
+        SYS_CALL(close(fd[1]),"close");
+        smash.executeCommand(second_command); 
+        exit(0);
+      }
+      int second_son = fork();
+      if(second_son < 0)
+      {
+        SYS_CALL(close(fd[0]),"close");
+        SYS_CALL(close(fd[1]),"close");
+        perror("smash error: fork failed");
+      }
+      if(second_son == 0)
+      { //second child
+        SYS_CALL(setpgrp(), "setpgrp");
+        SYS_CALL(dup2((fd[1]),1),"close");
+        SYS_CALL(close(fd[0]),"close");
+        SYS_CALL(close(fd[1]),"close");
+        smash.executeCommand(first_command);
+        exit(0);
+      }
+    }
+    close()
+}
+
+bool PipeCommand::isWithAnd(std::string stringToCheck)
+{
+  return(stringToCheck.find("|&"));
+}
+
+std::string PipeCommand::getFirstCommand(std::string *whole_command)
+{
+  std::string str = str.erase(whole_command->find_first_of("|"),temp_string.size());
+  return(str);
+}
+
+std::string PipeCommand::getSecondCommand(std::string *whole_command)
+{
+  whole_command->erase(2, whole_command->length);
+  _trim(&(*whole_command));
+  std::string str = str.erase(0,temp_string.find_first_of("&")+1);
+}
+
+

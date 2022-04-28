@@ -40,11 +40,15 @@ class ExternalCommand : public Command {
 };
 
 class PipeCommand : public Command {
-  // TODO: Add your data members
+  std::string cmd_line;
  public:
   PipeCommand(const char* cmd_line);
-  virtual ~PipeCommand() {}
+  virtual ~PipeCommand();
   void execute() override;
+
+  bool PipeCommand::isWithAnd();
+  std::string getFirstCommand(std::string whole_command);
+  std::string getSecondCommand(std::string whole_command);
 };
 
 class RedirectionCommand : public Command {
