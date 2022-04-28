@@ -49,6 +49,9 @@ class PipeCommand : public Command {
 
 class RedirectionCommand : public Command {
  // TODO: Add your data members
+ bool is_append;
+ const char* command;
+ const char* output_file;
  public:
   explicit RedirectionCommand(const char* cmd_line);
   virtual ~RedirectionCommand() {}
@@ -185,7 +188,7 @@ class BackgroundCommand : public BuiltInCommand {
 
 class TailCommand : public BuiltInCommand {
  public:
-  TailCommand(const char* cmd_line);
+  TailCommand(const char* cmd_line) : BuiltInCommand(cmd_line) {};
   virtual ~TailCommand() {}
   void execute() override;
 };
