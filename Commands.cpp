@@ -452,6 +452,27 @@ void QuitCommand::execute()
 }
 
 
+void TouchCommand::execute()
+{
+    if(this->size_args != 2)
+    {
+      std::cout << "smash error: touch: invalid arguments" << std::endl;
+      return;
+    }
+
+    std::string file_name = std::string(this->args[0]);
+    std::string time_details = std::string(this->args[1]);
+    
+    /*
+    if(//*utime(const char *filename, const struct utimbuf *times)==- 1)
+    {
+      //print error
+    }
+    */
+}
+
+
+
 
 /*=====================================================*/
 /*=============JobsList & JobEntry Methods=============*/
@@ -810,7 +831,6 @@ void PipeCommand::execute()
         exit(0);
       }
     }
-
     else  //* Meaning this is "|" command
     {
       int first_son = fork();
@@ -854,17 +874,18 @@ bool PipeCommand::isWithAnd(std::string stringToCheck)
   return(stringToCheck.find("|&"));
 }
 
-std::string PipeCommand::getFirstCommand(string whole_command)
+std::string PipeCommand::getFirstCommand(std::string whole_command)
 {
-  std::string str = str.erase(whole_command.find_first_of("|"),whole_command.size());
-  return(str);
+  std::string str = whole_command.substr(0,whole_command.find_first_of("|"));
+  _trim(str);
+  return str;
 }
 
-std::string PipeCommand::getSecondCommand(string whole_command)
+std::string PipeCommand::getSecondCommand(std::string whole_command)
 {
-  whole_command.erase(2, whole_command.length());
-  whole_command = _trim(whole_command);
-  std::string str = str.erase(0,whole_command.find_first_of("&")+1);
+  int start_index = whole_command.find_first_of("|") + 2;
+  whole_command.erase(start_index , whole_command.length());
+  std::string str = whole_command.substr(whole_command.find_first_not_of(" "), whole_command.find_first_of(" "));
+  _trim(str);
+  return str;
 }
-
-
