@@ -122,8 +122,16 @@ Command * SmallShell::CreateCommand(const char* cmd_line) {
   string cmd_s = _trim(string(command_line));
   string firstWord = cmd_s.substr(0, cmd_s.find_first_of(" \n"));
   
+<<<<<<< HEAD
+  if(cmd_s.find_first_of(" > ") || cmd_s.find_first_of(" >> ")){
+
+  }
+
+||||||| ca75f77
+=======
   delete command_line;
 
+>>>>>>> b60991879ddb96450eaf263dab84d9cdeea81312
   if(firstWord.compare("chprompt") == 0)
     return new ChangePromptCommand(cmd_line, &(this->shellname));
   else if (firstWord.compare("pwd") == 0)
