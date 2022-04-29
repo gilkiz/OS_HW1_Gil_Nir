@@ -487,7 +487,7 @@ void TouchCommand::execute()
 
 
     struct tm tm;
-    memset(&tm, 0, sizeof(tm));
+    //memset(&tm, 0, sizeof(tm));
     
     strptime(this->args[2], "%s:%M:%H:%d:%m:%Y", &tm);
     
