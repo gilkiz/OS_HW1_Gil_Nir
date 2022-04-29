@@ -210,6 +210,7 @@ class SmallShell {
    string shellname;
    char *last_directory;
    JobsList *jobs_list;
+   int smash_pid;
    SmallShell(); //??  <--
 
  public:

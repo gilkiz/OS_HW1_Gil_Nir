@@ -129,7 +129,7 @@ void _removeBackgroundSign(char* cmd_line) {
 
 // TODO: Add your implementation for classes in Commands.h
 
-SmallShell::SmallShell() : shellname("smash> "), last_directory(NULL), jobs_list(new JobsList()){};
+SmallShell::SmallShell() : shellname("smash> "), last_directory(NULL), jobs_list(new JobsList(), smash_pid(getpid())){};
 
 SmallShell::~SmallShell() 
 {
