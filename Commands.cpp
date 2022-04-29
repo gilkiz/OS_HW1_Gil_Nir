@@ -489,7 +489,7 @@ void TouchCommand::execute()
     struct tm tm;
     memset(&tm, 0, sizeof(tm));
     
-    strptime(this->args[1], "%s:%M:%H:%d:%m:%Y", &tm);
+    strptime(this->args[2], "%s:%M:%H:%d:%m:%Y", &tm);
     
     struct utimbuf utimebuf_for_utime;
     utimebuf_for_utime.actime=mktime(&tm);
