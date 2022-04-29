@@ -62,6 +62,17 @@ using namespace std;
     }                                                   \
   } while (0)
 
+  #define SYS_CALL_UTIME(syscall, name, filename, time_for_utime)                         \
+  do                                                    \
+  {                                                     \
+    if(syscall(filename, time_for_utime) == -1)                                    \
+    {                                                   \
+      string er = string("smash error: ") + string(name) + string(" failed");   \
+      perror((char*)er.c_str());                              \
+      return;                                           \
+    }                                                   \
+  } while (0)
+
 
 const std::string WHITESPACE = " \n\r\t\f\v";
 
@@ -173,6 +184,8 @@ Command * SmallShell::CreateCommand(const char* cmd_line)
     return new QuitCommand(cmd_line, this->jobs_list);
   else if(firstWord.compare("tail") == 0)
     return new TailCommand(cmd_line);
+  else if(firstWord.compare("touch") == 0)
+    return new TouchCommand(cmd_line);
   else
     return new ExternalCommand(cmd_line);
 }
@@ -469,13 +482,16 @@ void TouchCommand::execute()
 
     std::string file_name = std::string(this->args[0]);
     std::string time_details = std::string(this->args[1]);
+
+    struct tm tm;
+    memset(&tm, 0, sizeof(tm));
     
-    /*
-    if(//utime(const char *filename, const struct utimbuf *times)==- 1)
-    {
-      //print error
-    }
-    */
+    strptime(time_details, "%s:%M:%H:%d:%m:%Y", &tm)
+    time_t time_for_utime = mktime(&tm);
+    
+    SYS_CALL_UTIME(utime, "utime", file_name, time_for_utime);
+
+    return;
 }
 
 

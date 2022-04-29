@@ -199,7 +199,7 @@ class TailCommand : public BuiltInCommand {
 class TouchCommand : public BuiltInCommand {
  public:
   TouchCommand(const char* cmd_line) : BuiltInCommand(cmd_line){} 
-  virtual ~TouchCommand() = default ;
+  virtual ~TouchCommand() {} ;
   void execute() override;
 };
 
