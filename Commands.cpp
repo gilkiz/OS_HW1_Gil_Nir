@@ -129,7 +129,7 @@ void _removeBackgroundSign(char* cmd_line) {
 
 // TODO: Add your implementation for classes in Commands.h
 
-SmallShell::SmallShell() : shellname("smash> "), last_directory(NULL), jobs_list(new JobsList(), smash_pid(getpid())){};
+SmallShell::SmallShell() : shellname("smash> "), last_directory(NULL), jobs_list(new JobsList()), smash_pid(getpid()){};
 
 SmallShell::~SmallShell() 
 {
@@ -139,7 +139,8 @@ SmallShell::~SmallShell()
 /**
 * Creates and returns a pointer to Command class which matches the given command line (cmd_line)
 */
-Command * SmallShell::CreateCommand(const char* cmd_line) {
+Command * SmallShell::CreateCommand(const char* cmd_line) 
+{
   char *command_line = new char[COMMAND_ARGS_MAX_LENGTH];
   if(strcpy(command_line, cmd_line) == NULL) // error
   if (_isBackgroundCommand(command_line))
