@@ -887,9 +887,7 @@ std::string PipeCommand::getFirstCommand(std::string whole_command)
 
 std::string PipeCommand::getSecondCommand(std::string whole_command)
 {
-  int start_index = whole_command.find_first_of("|") + 2;
-  whole_command.erase(start_index , whole_command.length());
-  std::string str = whole_command.substr(whole_command.find_first_not_of(" "), whole_command.find_first_of(" "));
+  std::string str = whole_command.substr(whole_command.find_first_of("|")+1 , whole_command.length());
   _trim(str);
   return str;
 }
