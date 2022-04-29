@@ -492,7 +492,7 @@ void TouchCommand::execute()
     utimebuf_for_utime.actime=mktime(&tm);
     utimebuf_for_utime.actime=mktime(&tm);
 
-    SYS_CALL_UTIME(utime, "utime", args[0], utimebuf_for_utime);
+    SYS_CALL_UTIME(utime, "utime", args[0], &utimebuf_for_utime);
 
     return;
 }
