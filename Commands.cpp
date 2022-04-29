@@ -479,9 +479,12 @@ void TouchCommand::execute()
       std::cout << "smash error: touch: invalid arguments" << std::endl;
       return;
     }
+    char path_to_directory[PATH_MAX];
+    SYS_CALL_PTR(getcwd(path_to_directory, sizeof(path_to_directory)), "getcwd");
+    //std::string sting_path_to_directory = string(path_to_directory);
+    strcat(path_to_directory, "/");
+    strcat(path_to_directory, args[1]);
 
-    std::string file_name = std::string(this->args[0]);
-    std::string time_details = std::string(this->args[1]);
 
     struct tm tm;
     memset(&tm, 0, sizeof(tm));
@@ -492,7 +495,7 @@ void TouchCommand::execute()
     utimebuf_for_utime.actime=mktime(&tm);
     utimebuf_for_utime.actime=mktime(&tm);
 
-    SYS_CALL_UTIME(utime, "utime", args[0], &utimebuf_for_utime);
+    SYS_CALL_UTIME(utime, "utime", path_to_directory , &utimebuf_for_utime);
 
     return;
 }
