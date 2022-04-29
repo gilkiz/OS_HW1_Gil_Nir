@@ -62,7 +62,7 @@ using namespace std;
     }                                                   \
   } while (0)
 
-#define SYS_CALL_UTIME(syscall, name, filename, time_for_utime)                         \
+#define SYS_CALL_UTIME(syscall, name, filename, utimebuf_for_utime)                         \
   do                                                    \
   {                                                     \
     if(syscall(filename, time_for_utime) == -1)                                    \
@@ -487,8 +487,12 @@ void TouchCommand::execute()
     memset(&tm, 0, sizeof(tm));
     
     strptime(this->args[1], "%s:%M:%H:%d:%m:%Y", &tm);
+
+    time_t time_for_utimbuf(mktime(&tm));
     
-    SYS_CALL_UTIME(utime, "utime", args[0], mktime(&tm));
+    struct utimbuf utimebuf_for_utime(time_for_utimbuf);
+
+    SYS_CALL_UTIME(utime, "utime", args[0], utimebuf_for_utime);
 
     return;
 }
