@@ -207,6 +207,11 @@ JobsList *SmallShell::GetJobsList()
   return this->jobs_list;
 }
 
+int SmallShell::GetSmashPid()
+{
+  return this->smash_pid;
+}
+
 /*======================================================*/
 /*================== Commands Methods ==================*/
 /*======================================================*/
@@ -256,7 +261,8 @@ void ChangePromptCommand::execute()
 
 void ShowPidCommand::execute()
 {
-  std::cout << "smash pid is " << getpid() << std::endl;
+  SmallShell &smash = SmallShell::getInstance();
+  std::cout << "smash pid is " << smash.getSmashPid() << std::endl;
 }
 
 // GetCurrDirCommand, pwd

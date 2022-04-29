@@ -228,6 +228,7 @@ class SmallShell {
   std::string GetName();
   char **GetLastDirectory();
   JobsList *GetJobsList();
+  int getSmashPid();
   // TODO: add extra methods as needed
 };
 
