@@ -471,7 +471,7 @@ void QuitCommand::execute()
   exit(0);
 }
 
-
+// TouchCommand
 void TouchCommand::execute()
 {
     if(this->size_args != 3)
@@ -483,11 +483,8 @@ void TouchCommand::execute()
     SYS_CALL_PTR(getcwd(path_to_directory, sizeof(path_to_directory)), "getcwd");
     strcat(path_to_directory, "/");
     strcat(path_to_directory, args[1]);
-
-
-    struct tm tm;
-    //memset(&tm, 0, sizeof(tm));
     
+    struct tm tm;
     strptime(this->args[2], "%s:%M:%H:%d:%m:%Y", &tm);
     
     struct utimbuf utimebuf_for_utime;
