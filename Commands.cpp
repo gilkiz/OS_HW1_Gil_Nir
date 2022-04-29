@@ -486,10 +486,10 @@ void TouchCommand::execute()
     struct tm tm;
     memset(&tm, 0, sizeof(tm));
     
-    strptime(time_details, "%s:%M:%H:%d:%m:%Y", &tm)
+    strptime(this->args[1], "%s:%M:%H:%d:%m:%Y", &tm)
     time_t time_for_utime = mktime(&tm);
     
-    SYS_CALL_UTIME(utime, "utime", file_name, time_for_utime);
+    SYS_CALL_UTIME(utime, "utime", file_name, mktime(&tm));
 
     return;
 }
