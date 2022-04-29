@@ -827,6 +827,10 @@ void PipeCommand::execute()
         smash.executeCommand(first_command.c_str());
         exit(0);
       }
+      CALL_SYS(close(fd[0]), "close");
+      CALL_SYS(close(fd[1]),"close");
+      waitpid(first_son ,nullptr,0);
+      waitpid(second_son ,nullptr,0);
     }
     else  //* Meaning this is "|" command
     {
@@ -862,11 +866,11 @@ void PipeCommand::execute()
         smash.executeCommand(first_command.c_str());
         exit(0);
       }
-    }
     CALL_SYS(close(fd[0]), "close");
     CALL_SYS(close(fd[1]),"close");
     waitpid(first_son ,nullptr,0);
     waitpid(second_son ,nullptr,0);
+    }
 }
 
 bool PipeCommand::isWithAnd(std::string stringToCheck)
