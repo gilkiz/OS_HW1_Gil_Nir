@@ -783,10 +783,6 @@ void TailCommand::execute()
 /*======================Special Commands======================*/
 /*============================================================*/
 
-PipeCommand::~PipeCommand() 
-{
-  delete this->cmd_line;
-}
 
 void PipeCommand::execute()
 {
