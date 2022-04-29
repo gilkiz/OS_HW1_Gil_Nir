@@ -481,7 +481,6 @@ void TouchCommand::execute()
     }
     char path_to_directory[PATH_MAX];
     SYS_CALL_PTR(getcwd(path_to_directory, sizeof(path_to_directory)), "getcwd");
-    //std::string sting_path_to_directory = string(path_to_directory);
     strcat(path_to_directory, "/");
     strcat(path_to_directory, args[1]);
 
@@ -493,7 +492,7 @@ void TouchCommand::execute()
     
     struct utimbuf utimebuf_for_utime;
     utimebuf_for_utime.actime=mktime(&tm);
-    utimebuf_for_utime.actime=mktime(&tm);
+    utimebuf_for_utime.modtime=mktime(&tm);
 
     SYS_CALL_UTIME(utime, "utime", path_to_directory , &utimebuf_for_utime);
 
