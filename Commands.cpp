@@ -474,7 +474,7 @@ void QuitCommand::execute()
 
 void TouchCommand::execute()
 {
-    if(this->size_args != 2)
+    if(this->size_args != 3)
     {
       std::cout << "smash error: touch: invalid arguments" << std::endl;
       return;
