@@ -18,7 +18,7 @@ class Command {
 
  public:
    Command(const char *cmd_line);
-   virtual ~Command() {};
+   virtual ~Command();
    virtual void execute() = 0;
    string GetCmdLine();
    // virtual void prepare();
@@ -41,20 +41,17 @@ class ExternalCommand : public Command {
 
 class PipeCommand : public Command {
  public:
-  PipeCommand(const char* cmd_line) : Command(cmd_line){};
-  virtual ~PipeCommand();
+  PipeCommand(const char* cmd_line);
+  virtual ~PipeCommand() {};
   void execute() override;
 
-  bool isWithAnd(string cmd_line);
-  string getFirstCommand(string whole_command);
-  string getSecondCommand(string whole_command);
+  bool PipeCommand::isWithAnd();
+  std::string getFirstCommand(std::string whole_command);
+  std::string getSecondCommand(std::string whole_command);
 };
 
 class RedirectionCommand : public Command {
  // TODO: Add your data members
- bool is_append;
- const char* command;
- const char* output_file;
  public:
   explicit RedirectionCommand(const char* cmd_line);
   virtual ~RedirectionCommand() {}
@@ -191,7 +188,7 @@ class BackgroundCommand : public BuiltInCommand {
 
 class TailCommand : public BuiltInCommand {
  public:
-  TailCommand(const char* cmd_line) : BuiltInCommand(cmd_line) {};
+  TailCommand(const char* cmd_line);
   virtual ~TailCommand() {}
   void execute() override;
 };
