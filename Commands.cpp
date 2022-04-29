@@ -207,7 +207,7 @@ JobsList *SmallShell::GetJobsList()
   return this->jobs_list;
 }
 
-int SmallShell::GetSmashPid()
+int SmallShell::getSmashPid()
 {
   return this->smash_pid;
 }
