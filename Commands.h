@@ -42,7 +42,7 @@ class ExternalCommand : public Command {
 class PipeCommand : public Command {
  public:
   PipeCommand(const char* cmd_line) : Command(cmd_line){};
-  virtual ~PipeCommand();
+  virtual ~PipeCommand() {};
   void execute() override;
 
   bool isWithAnd(string cmd_line);

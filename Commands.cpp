@@ -464,7 +464,7 @@ void TouchCommand::execute()
     std::string time_details = std::string(this->args[1]);
     
     /*
-    if(//*utime(const char *filename, const struct utimbuf *times)==- 1)
+    if(//utime(const char *filename, const struct utimbuf *times)==- 1)
     {
       //print error
     }
@@ -784,10 +784,6 @@ void TailCommand::execute()
 /*======================Special Commands======================*/
 /*============================================================*/
 
-PipeCommand::~PipeCommand() 
-{
-  delete this->cmd_line;
-}
 
 void PipeCommand::execute()
 {
