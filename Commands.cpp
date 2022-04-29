@@ -488,7 +488,9 @@ void TouchCommand::execute()
     
     strptime(this->args[1], "%s:%M:%H:%d:%m:%Y", &tm);
     
-    struct utimbuf utimebuf_for_utime((mktime(&tm)) , (mktime(&tm)));
+    struct utimbuf utimebuf_for_utime;
+    utimebuf_for_utime.actime=mktime(&tm);
+    utimebuf_for_utime.actime=modtime(&tm);
 
     SYS_CALL_UTIME(utime, "utime", args[0], utimebuf_for_utime);
 
