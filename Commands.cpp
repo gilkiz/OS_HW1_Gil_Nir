@@ -65,7 +65,7 @@ using namespace std;
 #define SYS_CALL_UTIME(syscall, name, filename, utimebuf_for_utime)                         \
   do                                                    \
   {                                                     \
-    if(syscall(filename, time_for_utime) == -1)                                    \
+    if(syscall(filename, utimebuf_for_utime) == -1)                                    \
     {                                                   \
       string er = string("smash error: ") + string(name) + string(" failed");   \
       perror((char*)er.c_str());                              \
@@ -487,10 +487,8 @@ void TouchCommand::execute()
     memset(&tm, 0, sizeof(tm));
     
     strptime(this->args[1], "%s:%M:%H:%d:%m:%Y", &tm);
-
-    time_t time_for_utimbuf(mktime(&tm));
     
-    struct utimbuf utimebuf_for_utime(time_for_utimbuf , time_for_utimbuf);
+    struct utimbuf utimebuf_for_utime((mktime(&tm)) , (mktime(&tm)));
 
     SYS_CALL_UTIME(utime, "utime", args[0], utimebuf_for_utime);
 
