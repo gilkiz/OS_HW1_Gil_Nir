@@ -62,7 +62,7 @@ using namespace std;
     }                                                   \
   } while (0)
 
-  #define SYS_CALL_UTIME(syscall, name, filename, time_for_utime)                         \
+#define SYS_CALL_UTIME(syscall, name, filename, time_for_utime)                         \
   do                                                    \
   {                                                     \
     if(syscall(filename, time_for_utime) == -1)                                    \
