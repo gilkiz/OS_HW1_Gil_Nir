@@ -818,7 +818,7 @@ void PipeCommand::execute()
         SYS_CALL(close(fd[0]),"close");
         SYS_CALL(close(fd[1]),"close");
       }
-      if(second_son == 0)
+      else if(second_son == 0)
       { //second child
         SYS_CALL(setpgrp(), "setpgrp");
         SYS_CALL(dup2((fd[1]),STDERR_FILENO),"close");
@@ -853,7 +853,7 @@ void PipeCommand::execute()
         SYS_CALL(close(fd[1]),"close");
         perror("smash error: fork failed");
       }
-      if(second_son == 0)
+      else if(second_son == 0)
       { //second child
         SYS_CALL(setpgrp(), "setpgrp");
         SYS_CALL(dup2((fd[1]),STDOUT_FILENO),"close");
@@ -863,7 +863,10 @@ void PipeCommand::execute()
         exit(0);
       }
     }
-    //close();
+    CALL_SYS(close(fd[0]), "close");
+    CALL_SYS(close(fd[1]),"close");
+    waitpid(first_son ,nullptr,0);
+    waitpid(second_son ,nullptr,0);
 }
 
 bool PipeCommand::isWithAnd(std::string stringToCheck)
