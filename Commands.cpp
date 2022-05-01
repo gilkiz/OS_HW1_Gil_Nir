@@ -696,16 +696,7 @@ void ExternalCommand::execute()
   pid_t pid = fork();
   if(pid < 0)
     perror("smash error: fork failed");
-  else if(pid == 0) // son (external)
-  {
-    char* cmd_line = (char*)this->GetCmdLine().c_str();
-    _removeBackgroundSign(cmd_line);
-    SYS_CALL(setpgrp(), "setpgrp");
-    execlp("/bin/bash", "bash", "-c", cmd_line, NULL);
-    perror("smash error: execlp failed");
-    exit(0);
-  }
-  else // father (smash)
+  else if(pid > 0) // father (smash)
   {
     if(_isBackgroundCommand(this->cmd_line))
       smash.GetJobsList()->addJob(this ,pid);
@@ -718,6 +709,16 @@ void ExternalCommand::execute()
       if(WIFEXITED(status) || WIFSIGNALED(status))
         smash.GetJobsList()->removeJobByPid(pid);
     }
+    
+  }
+  else // son (external)
+  {
+    char* cmd_line = (char*)this->GetCmdLine().c_str();
+    _removeBackgroundSign(cmd_line);
+    SYS_CALL(setpgrp(), "setpgrp");
+    execlp("/bin/bash", "bash", "-c", cmd_line, NULL);
+    perror("smash error: execlp failed");
+    exit(0);
   }
 }
 
