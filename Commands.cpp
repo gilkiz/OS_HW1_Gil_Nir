@@ -155,7 +155,9 @@ Command * SmallShell::CreateCommand(const char* cmd_line)
   char *command_line = new char[COMMAND_ARGS_MAX_LENGTH];
   if(strcpy(command_line, cmd_line) == NULL) // error
   if (_isBackgroundCommand(command_line))
+  {
     _removeBackgroundSign(command_line);
+  }
 
   string cmd_s = _trim(string(command_line));
   string firstWord = cmd_s.substr(0, cmd_s.find_first_of(" \n"));
@@ -196,11 +198,13 @@ void SmallShell::executeCommand(const char *cmd_line) {
   // Command* cmd = CreateCommand(cmd_line);
   // cmd->execute();
   // Please note that you must fork smash process for some commands (e.g., external commands....)
-
-  Command *cmd = CreateCommand(cmd_line);
+  bool is_background = false;
+  Command *cmd = CreateCommand(cmd_line, &is_background);
   if(cmd)
   {
     cmd->execute();
+    this->setCurrentFgPid(-1);
+    this->setCurrentFgCommand(NULL);
     delete cmd;
   }
 }
