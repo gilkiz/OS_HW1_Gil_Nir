@@ -25,7 +25,7 @@ void ctrlZHandler(int sig_num) {
   SmallShell &smash = SmallShell::getInstance();
   int current_fg_process = smash.getCurrentFgPid();
 
-  if(current_fg_process != -1 || kill(current_fg_process , 0) == -1)
+  if(current_fg_process != -1)
   {
     return; //meaning there is no process in the FG
   }
@@ -45,7 +45,7 @@ void ctrlCHandler(int sig_num) {
   SmallShell &smash = SmallShell::getInstance();
   int current_fg_process = smash.getCurrentFgPid();
 
-  if(current_fg_process != -1 || kill(current_fg_process , 0) == -1)
+  if(current_fg_process != -1)
   {
     return; //meaning there is no process in the FG
   }
