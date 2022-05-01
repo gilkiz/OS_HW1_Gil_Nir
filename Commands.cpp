@@ -199,7 +199,7 @@ void SmallShell::executeCommand(const char *cmd_line) {
   // cmd->execute();
   // Please note that you must fork smash process for some commands (e.g., external commands....)
   bool is_background = false;
-  Command *cmd = CreateCommand(cmd_line, &is_background);
+  Command *cmd = CreateCommand(cmd_line);
   if(cmd)
   {
     cmd->execute();
