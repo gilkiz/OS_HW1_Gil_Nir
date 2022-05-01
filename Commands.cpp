@@ -140,7 +140,7 @@ void _removeBackgroundSign(char* cmd_line) {
 
 // TODO: Add your implementation for classes in Commands.h
 
-SmallShell::SmallShell() : shellname("smash> "), last_directory(NULL), jobs_list(new JobsList()), smash_pid(getpid()){};
+SmallShell::SmallShell() : shellname("smash> "), last_directory(NULL), jobs_list(new JobsList()), smash_pid(getpid()), current_foreground_process_pid(-1), current_foreground_command(NULL){};
 
 SmallShell::~SmallShell() 
 {
@@ -223,6 +223,26 @@ JobsList *SmallShell::GetJobsList()
 int SmallShell::getSmashPid()
 {
   return this->smash_pid;
+}
+
+void SmallShell::setCurrentFgPid(int pid_to_set)
+{
+  this->current_foreground_process_pid = pid_to_set;
+}
+
+int SmallShell::getCurrentFgPid()
+{
+  return this->current_foreground_process_pid;
+}
+
+void SmallShell::setCurrentFgCommand(Command *cmd)
+{
+  this->current_foreground_command = cmd;
+}
+
+int SmallShell::getCurrentFgCommand()
+{
+  return this->current_foreground_command;
 }
 
 /*======================================================*/
@@ -406,6 +426,9 @@ void ForegroundCommand::execute()
   }
   if(job->IsStopped())
     job->SwitchIsStopped();
+  SmallShell &smash = SmallShell::getInstance();
+  smash.setCurrentFgPid(job->getPID);
+  smash.setCurrentFgCommand(this);
   std::cout << job->GetCmdLine() << ": " << job->getPID() << std::endl;
   int status = 0;
   waitpid(job->getPID(), &status, WUNTRACED);
@@ -689,6 +712,8 @@ void ExternalCommand::execute()
     else
     {
       int status;
+      smash.setCurrentFgPid(pid);
+      smash.setCurrentFgCommand(this);
       waitpid(pid, &status, WUNTRACED);
       if(WIFEXITED(status) || WIFSIGNALED(status))
         smash.GetJobsList()->removeJobByPid(pid);

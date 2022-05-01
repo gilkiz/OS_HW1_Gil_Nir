@@ -212,6 +212,8 @@ class SmallShell {
    JobsList *jobs_list;
    int smash_pid;
    SmallShell(); //??  <--
+   int current_foreground_process_pid; 
+   Command *current_foreground_command;
 
  public:
   Command *CreateCommand(const char* cmd_line);
@@ -229,6 +231,10 @@ class SmallShell {
   char **GetLastDirectory();
   JobsList *GetJobsList();
   int getSmashPid();
+  void setCurrentFgPid(int pid_to_set);
+  int getCurrentFgPid();
+  void setCurrentFgCommand(Command *cmd);
+  Command* getCurrentFgCommand();
   // TODO: add extra methods as needed
 };
 
