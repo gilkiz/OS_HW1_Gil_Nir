@@ -240,7 +240,7 @@ void SmallShell::setCurrentFgCommand(Command *cmd)
   this->current_foreground_command = cmd;
 }
 
-int SmallShell::getCurrentFgCommand()
+Command* SmallShell::getCurrentFgCommand()
 {
   return this->current_foreground_command;
 }
@@ -427,7 +427,7 @@ void ForegroundCommand::execute()
   if(job->IsStopped())
     job->SwitchIsStopped();
   SmallShell &smash = SmallShell::getInstance();
-  smash.setCurrentFgPid(job->getPID);
+  smash.setCurrentFgPid(job->getPID());
   smash.setCurrentFgCommand(this);
   std::cout << job->GetCmdLine() << ": " << job->getPID() << std::endl;
   int status = 0;
