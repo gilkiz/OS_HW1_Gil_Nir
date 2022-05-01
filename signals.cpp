@@ -27,6 +27,7 @@ void ctrlZHandler(int sig_num) {
 
   if(current_fg_process == -1)
   {
+    exit(0);
     return; //meaning there is no process in the FG
   }
 
