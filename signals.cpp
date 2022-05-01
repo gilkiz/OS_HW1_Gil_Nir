@@ -27,7 +27,6 @@ void ctrlZHandler(int sig_num) {
 
   if(current_fg_process == -1)
   {
-    std::cout << "hi" << std::endl;
     return; //meaning there is no process in the FG
   }
 
