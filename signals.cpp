@@ -36,12 +36,26 @@ void ctrlZHandler(int sig_num) {
     kill(current_fg_process,19);
     smash.setCurrentFgPid(-1);
     smash.setCurrentFgCommand(NULL);
-    std::cout << " smash: process " << current_fg_process << " was stopped " << std::endl;
+    std::cout << " smash: process " << current_fg_process << " was stopped" << std::endl;
   }
 }
 
 void ctrlCHandler(int sig_num) {
-  // TODO: Add your implementation
+  std::cout << "smash: got ctrl-C" << std::endl;
+  SmallShell &smash = SmallShell::getInstance();
+  int current_fg_process = smash.getCurrentFgPid();
+
+  if(current_fg_process != -1 || kill(current_fg_process , 0) == -1)
+  {
+    return; //meaning there is no process in the FG
+  }
+  else
+  {
+    kill(current_fg_process,9);
+    smash.setCurrentFgPid(-1);
+    smash.setCurrentFgCommand(NULL);
+    std::cout << " smash: process " << current_fg_process << " was killed" << std::endl;
+  }
 }
 
 void alarmHandler(int sig_num) {
