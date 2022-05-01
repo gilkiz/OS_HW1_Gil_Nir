@@ -22,7 +22,7 @@ using namespace std;
 
 void ctrlZHandler(int sig_num) {
   std::cout << "smash: got ctrl-Z" << std::endl;
-  SmallShell &smash = SmallShell::getInstace();
+  SmallShell &smash = SmallShell::getInstance();
   int current_fg_process = smash.getCurrentFgPid();
 
   if(current_fg_process != -1 || kill(current_fg_process , 0) == -1)
