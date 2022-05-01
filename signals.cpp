@@ -25,16 +25,15 @@ void ctrlZHandler(int sig_num) {
   SmallShell &smash = SmallShell::getInstance();
   int current_fg_process = smash.getCurrentFgPid();
 
-  if(current_fg_process != -1)
+  if(current_fg_process != -1 || kill(current_fg_process , 0) == -1)
   {
-    // kill(current_fg_process , 0) == -1
     return; //meaning there is no process in the FG
   }
 
   else
   {
     smash.GetJobsList()->addJob(smash.getCurrentFgCommand(), current_fg_process);
-    SYS_CALL(kill(current_fg_process,19) , "kill");
+    kill(current_fg_process,19);
     smash.setCurrentFgPid(-1);
     smash.setCurrentFgCommand(NULL);
     std::cout << " smash: process " << current_fg_process << " was stopped " << std::endl;
