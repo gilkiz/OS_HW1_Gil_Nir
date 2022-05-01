@@ -36,7 +36,7 @@ void ctrlZHandler(int sig_num) {
     kill(current_fg_process,19);
     smash.setCurrentFgPid(-1);
     smash.setCurrentFgCommand(NULL);
-    std::cout << " smash: process " << current_fg_process << " was stopped" << std::endl;
+    std::cout << "smash: process " << current_fg_process << " was stopped" << std::endl;
   }
 }
 
@@ -54,7 +54,7 @@ void ctrlCHandler(int sig_num) {
     kill(current_fg_process,9);
     smash.setCurrentFgPid(-1);
     smash.setCurrentFgCommand(NULL);
-    std::cout << " smash: process " << current_fg_process << " was killed" << std::endl;
+    std::cout << "smash: process " << current_fg_process << " was killed" << std::endl;
   }
 }
 
