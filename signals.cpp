@@ -33,7 +33,7 @@ void ctrlZHandler(int sig_num) {
   else
   {
     smash.GetJobsList()->addJob(smash.getCurrentFgCommand(), current_fg_process);
-    SYS_CALL(kill(current_fg_process,SIGSTOP) , "kill");
+    SYS_CALL(kill(current_fg_process,19) , "kill");
     smash.setCurrentFgPid(-1);
     smash.setCurrentFgCommand(NULL);
     std::cout << " smash: process " << current_fg_process << " was stopped " << std::endl;
