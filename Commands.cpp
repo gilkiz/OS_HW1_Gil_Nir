@@ -806,28 +806,41 @@ void TailCommand::execute()
   }
   int fd_file;
   SYS_CALL((fd_file = open(this->args[file_index], O_RDONLY)), "open");
-  char buffer;
-  int pos = 2, line_length = 0;
-  int size = lseek(fd_file, 0, SEEK_END);
+  char buffer[1];
+  int pos = 0, line_length = 0;
+  int size = 0;
+  SYS_CALL((size = lseek(fd_file, 0, SEEK_END)), "lseek");
+  SYS_CALL(read(fd_file, buffer, 1), "read");
+
   while(pos <= size && cnt > 0)
   {
-    //SYS_CALL(read(fd_file, &buffer, 1), "read");
-    SYS_CALL(lseek(fd_file, -pos, SEEK_END), "lseek");
-    pos++;
-    if(pos > size) break;
-    SYS_CALL(read(fd_file, &buffer, 1), "read");
-    while(buffer != '\n')
+    while(WHITESPACE.substr(1).find(buffer[0]) != string::npos)
+    {
+      pos++;
+      if(pos > size) 
+      {
+        SYS_CALL(lseek(fd_file, -size, SEEK_END), "lseek");
+        buffer[0] = '\n';
+        break;
+      }
+      SYS_CALL(lseek(fd_file, -pos, SEEK_END), "lseek");
+      SYS_CALL(read(fd_file, buffer, 1), "read");
+    }
+    while(WHITESPACE.substr(1).find(buffer[0]) == string::npos)
     {
       line_length++;
-      if(pos > size) break;
-      SYS_CALL(lseek(fd_file, -pos, SEEK_END), "lseek");
       pos++;
-      SYS_CALL(read(fd_file, &buffer, 1), "read");
+      if(pos > size) 
+      {
+        SYS_CALL(lseek(fd_file, -size, SEEK_END), "lseek");
+        break;
+      }
+      SYS_CALL(lseek(fd_file, -pos, SEEK_END), "lseek");
+      SYS_CALL(read(fd_file, buffer, 1), "read");
     }
-    //SYS_CALL(lseek(fd_file, 1, SEEK_CUR), "lseek");
     char* line = new char[line_length];
     SYS_CALL(read(fd_file, line, line_length), "read");
-    std::cout << line << std::endl;
+    std::cout << string(line).substr(0,line_length) << std::endl;
     delete line;
     line_length = 0;
     cnt--;
