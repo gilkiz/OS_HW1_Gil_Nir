@@ -496,7 +496,7 @@ void QuitCommand::execute()
     this->jobs->killAllJobs();
   exit(0);
 }
-
+//mm
 // TouchCommand
 void TouchCommand::execute()
 {
