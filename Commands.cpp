@@ -496,13 +496,13 @@ void QuitCommand::execute()
     this->jobs->killAllJobs();
   exit(0);
 }
-//mm
+
 // TouchCommand
 void TouchCommand::execute()
 {
     if(this->size_args != 3)
     {
-      std::cerr<<("smash error: touch: invalid2222 arguments")<<std::endl;
+      std::cerr<<("smash error: touch: invalid arguments")<<std::endl;
       return;
     }
     char path_to_directory[PATH_MAX];
