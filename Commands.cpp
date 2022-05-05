@@ -502,7 +502,7 @@ void TouchCommand::execute()
 {
     if(this->size_args != 3)
     {
-      std::cout << "smash error: touch: invalid arguments" << std::endl;
+      perror("smash error: touch: invalid arguments");
       return;
     }
     char path_to_directory[PATH_MAX];
