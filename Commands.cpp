@@ -329,7 +329,7 @@ void ChangeDirCommand::execute()
     {
       if(this->last_directory == NULL) 
       {
-        std::cout << "smash error: cd: OLDPWD not set" << std::endl;
+        std::cerr << "smash error: cd: OLDPWD not set" << std::endl;
         return;
       }
       cd = *(this->last_directory);
@@ -341,7 +341,7 @@ void ChangeDirCommand::execute()
   }
   else if(this->size_args > 2)
   {
-    std::cout << "smash error: cd: too many arguments" << std::endl;
+    std::cerr << "smash error: cd: too many arguments" << std::endl;
   }
 }
 
@@ -369,20 +369,20 @@ void KillCommand::execute()
 {
   if(this->size_args != 3 || (this->args[1])[0] != '-')
   {
-    std::cout << "smash error: kill: invalid arguments" << std::endl;
+    std::cerr << "smash error: kill: invalid arguments" << std::endl;
     return;
   }
   int sig = atoi((string(this->args[1])).substr(1).c_str());
   int jobid = atoi(this->args[2]);
   if (sig == 0 || jobid == 0)
   {
-    std::cout << "smash error: kill: invalid arguments" << std::endl;
+    std::cerr << "smash error: kill: invalid arguments" << std::endl;
     return;
   }
   JobsList::JobEntry *job = this->jobs->getJobById(jobid);
   if(job == nullptr)
   {
-    std::cout << "smash error: kill: job-id " << jobid << " does not exist" << std::endl;
+    std::cerr << "smash error: kill: job-id " << jobid << " does not exist" << std::endl;
     return;
   }
   int pid = job->getPID();
@@ -403,13 +403,13 @@ void ForegroundCommand::execute()
     jobid = atoi(this->args[1]);
     if(jobid == 0)
     {
-      std::cout << "smash error: fg: invalid arguments" << std::endl;
+      std::cerr << "smash error: fg: invalid arguments" << std::endl;
       return;
     }
     job = this->jobs->getJobById(jobid);
     if(!job)
     {
-      std::cout << "smash error: fg: job-id " << jobid << " does not exist" << std::endl;
+      std::cerr << "smash error: fg: job-id " << jobid << " does not exist" << std::endl;
       return;
     }
   }
@@ -418,13 +418,13 @@ void ForegroundCommand::execute()
     job = this->jobs->getLastJob(&jobid);
     if(!job)
     {
-      std::cout << "smash error: fg: jobs list is empty" << std::endl;
+      std::cerr << "smash error: fg: jobs list is empty" << std::endl;
       return;
     }
   }
   else
   {
-    std::cout << "smash error: fg: invalid arguments" << std::endl;
+    std::cerr << "smash error: fg: invalid arguments" << std::endl;
     return;
   }
   if(job->IsStopped())
@@ -452,18 +452,18 @@ void BackgroundCommand::execute()
     jobid = atoi(this->args[1]);
     if(jobid == 0)
     {
-      std::cout << "smash error: bg: invalid arguments" << std::endl;
+      std::cerr << "smash error: bg: invalid arguments" << std::endl;
       return;
     }
     job = this->jobs->getJobById(jobid);
     if(!job)
     {
-      std::cout << "smash error: bg: job-id " << jobid << " does not exist" << std::endl;
+      std::cerr << "smash error: bg: job-id " << jobid << " does not exist" << std::endl;
       return;
     }
     if(!(job->IsStopped()))
     {
-      std::cout << "smash error: bg: job-id " << jobid <<
+      std::cerr << "smash error: bg: job-id " << jobid <<
        " is already running in the background" << std::endl;
       return;
     }
@@ -473,13 +473,13 @@ void BackgroundCommand::execute()
     job = this->jobs->getLastStoppedJob(&jobid);
     if(!job)
     {
-      std::cout << "smash error: bg: there is no stopped jobs to resume" << std::endl;
+      std::cerr << "smash error: bg: there is no stopped jobs to resume" << std::endl;
       return;
     }
   }
   else
   {
-    std::cout << "smash error: bg: invalid arguments" << std::endl;
+    std::cerr << "smash error: bg: invalid arguments" << std::endl;
     return;
   }
   job->SwitchIsStopped();
@@ -794,14 +794,14 @@ void TailCommand::execute()
     cnt = atoi((string(this->args[1])).substr(1).c_str());
     if(cnt == 0)
     {
-      std::cout << "smash error: tail: invalid arguments" << std::endl;
+      std::cerr << "smash error: tail: invalid arguments" << std::endl;
       return;
     }
     file_index = 2;
   }
   else if(this->size_args != 2)
   {
-    std::cout << "smash error: tail: invalid arguments" << std::endl;
+    std::cerr << "smash error: tail: invalid arguments" << std::endl;
     return;
   }
   int fd_file;

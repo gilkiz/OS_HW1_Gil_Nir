@@ -1,0 +1,17 @@
+Try 'timeout --help' for more information.
+Try 'timeout --help' for more information.
+bash: $'\360\364b\211\035V': command not found
+bash: $'p\371b\211\035V': command not found
+bash: $'\320\373b\211\035V': command not found
+bash: $'p\376b\211\035V': command not found
+bash: $'\220\002c\211\035V': command not found
+bash: $'\004c\211\035V': command not found
+bash: $'p\005c\211\035V': command not found
+bash: -c: line 0: unexpected EOF while looking for matching ``'
+bash: -c: line 1: syntax error: unexpected end of file
+bash: $'\260\bc\211\035V': command not found
+bash: $'\300\017c\211\035V': command not found
+bash: $'\200\fc\211\035V': command not found
+bash: $'\020\vc\211\035V': command not found
+bash: $'\200\001c\211\035V': command not found
+bash: $'\320\024c\211\035V': command not found

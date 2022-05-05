@@ -1,0 +1,4 @@
+bash: U: command not found
+bash: $'\340q\343\226': command not found
+smash error: lseek failed: Success
+smash error: open failed: No such file or directory
