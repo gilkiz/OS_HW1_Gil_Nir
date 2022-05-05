@@ -2,6 +2,8 @@ smash error: open failed: No such file or directory
 smash error: open failed: No such file or directory
 smash error: open failed: No such file or directory
 smash error: open failed: No such file or directory
-bash: $'\320z\365\322\005V': command not found
+bash: $'\320\312': command not found
+bash: $'\330FV': command not found
 smash error: open failed: No such file or directory
-bash: $'0p\365\322\005V': command not found
+bash: $'0\300': command not found
+bash: $'\330FV': command not found

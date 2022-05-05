@@ -1,6 +1,6 @@
-bash: $V: ambiguous redirect
-bash: $V: ambiguous redirect
-bash: $V: ambiguous redirect
-bash: $V: ambiguous redirect
-bash: $V: ambiguous redirect
-bash: $V: ambiguous redirect
+bash: $'\260\377\274ӿU': command not found
+bash: $'\260\003\275ӿU': command not found
+bash: $'\200\003\275ӿU': command not found
+bash: $'\260\003\275ӿU': command not found
+bash: $'@\b\275ӿU': command not found
+bash: $'\260\006\275ӿU': command not found
