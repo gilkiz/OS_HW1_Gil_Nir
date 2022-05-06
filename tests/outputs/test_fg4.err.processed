@@ -1,4 +1,4 @@
-bash: $'\340\201\241B\224U': command not found
+bash: $'\340q\261\034\205U': command not found
 smash error: fg: jobs list is empty
 smash error: fg: job-id 1 does not exist
 smash error: fg: invalid arguments

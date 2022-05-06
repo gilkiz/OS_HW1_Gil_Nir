@@ -233,8 +233,7 @@ smash> [2] sleep 200& : 3 X secs
 [14] sleep 1200 : 17 X secs (stopped)
 smash> signal number 9 was sent to pid 3
 smash> signal number 9 was sent to pid 5
-smash> sleep 400& : 5
-smash> smash> smash> [5] sleep 500& : 6 X secs
+smash> smash> smash> smash> [5] sleep 500& : 6 X secs
 [6] sleep 600& : 7 X secs
 [7] sleep 700& : 8 X secs
 [8] sleep 800& : 9 X secs

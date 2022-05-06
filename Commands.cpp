@@ -406,8 +406,9 @@ void ForegroundCommand::execute()
       std::cerr << "smash error: fg: invalid arguments" << std::endl;
       return;
     }
+    this->jobs->removeFinishedJobs();
     job = this->jobs->getJobById(jobid);
-    if(!job)
+    if(job == nullptr)
     {
       std::cerr << "smash error: fg: job-id " << jobid << " does not exist" << std::endl;
       return;
