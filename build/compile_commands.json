@@ -1,17 +1,17 @@
 [
 {
-  "directory": "/home/student/Desktop/HW1/HW1/build",
-  "command": "/usr/bin/g++    -g   -std=gnu++11 -o CMakeFiles/os_hw1.dir/smash.cpp.o -c /home/student/Desktop/HW1/HW1/smash.cpp",
-  "file": "/home/student/Desktop/HW1/HW1/smash.cpp"
+  "directory": "/home/student/Desktop/HW1/OS_HW1_Gil_Nir/build",
+  "command": "/usr/bin/g++    -g   -std=gnu++11 -o CMakeFiles/os_hw1.dir/smash.cpp.o -c /home/student/Desktop/HW1/OS_HW1_Gil_Nir/smash.cpp",
+  "file": "/home/student/Desktop/HW1/OS_HW1_Gil_Nir/smash.cpp"
 },
 {
-  "directory": "/home/student/Desktop/HW1/HW1/build",
-  "command": "/usr/bin/g++    -g   -std=gnu++11 -o CMakeFiles/os_hw1.dir/Commands.cpp.o -c /home/student/Desktop/HW1/HW1/Commands.cpp",
-  "file": "/home/student/Desktop/HW1/HW1/Commands.cpp"
+  "directory": "/home/student/Desktop/HW1/OS_HW1_Gil_Nir/build",
+  "command": "/usr/bin/g++    -g   -std=gnu++11 -o CMakeFiles/os_hw1.dir/Commands.cpp.o -c /home/student/Desktop/HW1/OS_HW1_Gil_Nir/Commands.cpp",
+  "file": "/home/student/Desktop/HW1/OS_HW1_Gil_Nir/Commands.cpp"
 },
 {
-  "directory": "/home/student/Desktop/HW1/HW1/build",
-  "command": "/usr/bin/g++    -g   -std=gnu++11 -o CMakeFiles/os_hw1.dir/signals.cpp.o -c /home/student/Desktop/HW1/HW1/signals.cpp",
-  "file": "/home/student/Desktop/HW1/HW1/signals.cpp"
+  "directory": "/home/student/Desktop/HW1/OS_HW1_Gil_Nir/build",
+  "command": "/usr/bin/g++    -g   -std=gnu++11 -o CMakeFiles/os_hw1.dir/signals.cpp.o -c /home/student/Desktop/HW1/OS_HW1_Gil_Nir/signals.cpp",
+  "file": "/home/student/Desktop/HW1/OS_HW1_Gil_Nir/signals.cpp"
 }
 ]

@@ -192,12 +192,9 @@ Command * SmallShell::CreateCommand(const char* cmd_line)
     return new ExternalCommand(cmd_line);
 }
 
-void SmallShell::executeCommand(const char *cmd_line) {
-  // TODO: Add your implementation here
-  // for example:
-  // Command* cmd = CreateCommand(cmd_line);
-  // cmd->execute();
-  // Please note that you must fork smash process for some commands (e.g., external commands....)
+void SmallShell::executeCommand(const char *cmd_line) 
+{
+  jobs_list->removeFinishedJobs();
   Command *cmd = CreateCommand(cmd_line);
   if(cmd)
   {
@@ -325,9 +322,9 @@ void ChangeDirCommand::execute()
     char before_change_pwd[PATH_MAX];
     SYS_CALL_PTR(getcwd(before_change_pwd, sizeof(before_change_pwd)), "getcwd");
     char *cd;
-    if (sizeof(this->args[1]) == 1 && (this->args[1])[0] == '-')
+    if (strcmp(this->args[1], "-") == 0)
     {
-      if(this->last_directory == NULL) 
+      if((*(this->last_directory)) == NULL) 
       {
         std::cerr << "smash error: cd: OLDPWD not set" << std::endl;
         return;
@@ -360,10 +357,7 @@ void JobsCommand::execute()
 
 // KillCommand, kill
 
-KillCommand::KillCommand(const char *cmd_line, JobsList *jobs) : BuiltInCommand::BuiltInCommand(cmd_line)
-{
-  this->jobs = jobs;
-}
+KillCommand::KillCommand(const char *cmd_line, JobsList *jobs) : BuiltInCommand::BuiltInCommand(cmd_line), jobs(jobs) {};
 
 void KillCommand::execute()
 {
@@ -379,14 +373,16 @@ void KillCommand::execute()
     std::cerr << "smash error: kill: invalid arguments" << std::endl;
     return;
   }
+  this->jobs->removeFinishedJobs();
   JobsList::JobEntry *job = this->jobs->getJobById(jobid);
-  if(job == nullptr)
+  if(job == nullptr || job->IsFinished())
   {
     std::cerr << "smash error: kill: job-id " << jobid << " does not exist" << std::endl;
     return;
   }
   int pid = job->getPID();
   SYS_CALL(kill(pid, sig), "kill");
+  job->Finished();
   std::cout << "signal number " << sig << " was sent to pid " << pid << std::endl;
 }
 
@@ -573,18 +569,13 @@ void JobsList::killAllJobs()
 
 void JobsList::removeFinishedJobs()
 {
-  pid_t finished_pid;
-  int status;      
-  while((finished_pid = waitpid(-1, &status, WNOHANG)) > 0)
+  pid_t finished_pid;  
+  while((finished_pid = waitpid(-1, nullptr, WNOHANG)) > 0)
   {
-    if(WIFEXITED(status) || WIFSIGNALED(status))
-    {
-      JobsList::JobEntry *job = this->getJobByPID(finished_pid);
-      if(job)
-        removeJobById(job->getJobID());
-    }
+      removeJobByPid(finished_pid);
   }
 }
+
 
 JobsList::JobEntry *JobsList::getJobById(int jobId)
 {
@@ -671,6 +662,10 @@ bool JobsList::JobEntry::IsStopped()
 {
   return this->is_stopped;
 }
+bool JobsList::JobEntry::IsFinished()
+{
+  return this->is_finished;
+}
 void JobsList::JobEntry::SwitchIsStopped()
 {
   this->is_stopped = !(this->is_stopped);
@@ -682,6 +677,10 @@ void JobsList::JobEntry::SwitchIsStopped()
   {
     SYS_CALL(kill(this->pid, SIGCONT), "kill");
   }
+}
+void JobsList::JobEntry::Finished()
+{
+  this->is_finished = true;
 }
 time_t JobsList::JobEntry::GetInsertTime()
 {

@@ -118,16 +118,19 @@ class JobsList {
    int job_id;
    pid_t pid;
    bool is_stopped;
+   bool is_finished;
    time_t insert_time;
 
    public:
     JobEntry(string cmd_line, int jobid, pid_t pid, bool isStopped) : 
-      cmd_line(cmd_line), job_id(jobid), pid(pid), is_stopped(isStopped), insert_time(0){};
+      cmd_line(cmd_line), job_id(jobid), pid(pid), is_stopped(isStopped), is_finished(false), insert_time(0){};
     string GetCmdLine();
     int getJobID();
     pid_t getPID();
     bool IsStopped();
+    bool IsFinished();
     void SwitchIsStopped();
+    void Finished();
     time_t GetInsertTime();
     void setTime();
     void restartInsertionTime();

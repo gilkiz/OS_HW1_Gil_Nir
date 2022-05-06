@@ -21,6 +21,7 @@ int main(int argc, char* argv[]) {
         std::cout << smash.GetName();
         std::string cmd_line;
         std::getline(std::cin, cmd_line);
+        smash.GetJobsList()->removeFinishedJobs();
         smash.executeCommand(cmd_line.c_str());
     }
     return 0;

@@ -2,8 +2,6 @@ smash error: open failed: No such file or directory
 smash error: open failed: No such file or directory
 smash error: open failed: No such file or directory
 smash error: open failed: No such file or directory
-bash: $'\320\352\210u': command not found
-bash: V: command not found
+bash: $'К\3062\365U': command not found
 smash error: open failed: No such file or directory
-bash: $'0\340\210u': command not found
-bash: V: command not found
+bash: $'0\220\3062\365U': command not found

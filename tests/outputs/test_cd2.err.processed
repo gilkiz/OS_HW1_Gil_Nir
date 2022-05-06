@@ -1,4 +1,5 @@
-bash: $'\340A\360αU': command not found
+bash: -c: line 0: unexpected EOF while looking for matching ``'
+bash: -c: line 1: syntax error: unexpected end of file
 smash error: chdir failed: No such file or directory
 smash error: cd: too many arguments
 smash error: chdir failed: No such file or directory

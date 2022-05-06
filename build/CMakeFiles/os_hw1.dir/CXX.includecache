@@ -6,7 +6,7 @@
 
 #IncludeRegexTransform: 
 
-/home/student/Desktop/HW1/HW1/Commands.cpp
+/home/student/Desktop/HW1/OS_HW1_Gil_Nir/Commands.cpp
 unistd.h
 -
 string.h
@@ -26,7 +26,7 @@ sys/stat.h
 iomanip
 -
 Commands.h
-/home/student/Desktop/HW1/HW1/Commands.h
+/home/student/Desktop/HW1/OS_HW1_Gil_Nir/Commands.h
 time.h
 -
 utime.h
@@ -38,25 +38,25 @@ linux/limits.h
 fcntl.h
 -
 
-/home/student/Desktop/HW1/HW1/Commands.h
+/home/student/Desktop/HW1/OS_HW1_Gil_Nir/Commands.h
 vector
 -
 string
 -
 
-/home/student/Desktop/HW1/HW1/signals.cpp
+/home/student/Desktop/HW1/OS_HW1_Gil_Nir/signals.cpp
 iostream
 -
 signal.h
 -
 signals.h
-/home/student/Desktop/HW1/HW1/signals.h
+/home/student/Desktop/HW1/OS_HW1_Gil_Nir/signals.h
 Commands.h
-/home/student/Desktop/HW1/HW1/Commands.h
+/home/student/Desktop/HW1/OS_HW1_Gil_Nir/Commands.h
 
-/home/student/Desktop/HW1/HW1/signals.h
+/home/student/Desktop/HW1/OS_HW1_Gil_Nir/signals.h
 
-/home/student/Desktop/HW1/HW1/smash.cpp
+/home/student/Desktop/HW1/OS_HW1_Gil_Nir/smash.cpp
 iostream
 -
 unistd.h
@@ -66,7 +66,7 @@ sys/wait.h
 signal.h
 -
 Commands.h
-/home/student/Desktop/HW1/HW1/Commands.h
+/home/student/Desktop/HW1/OS_HW1_Gil_Nir/Commands.h
 signals.h
-/home/student/Desktop/HW1/HW1/signals.h
+/home/student/Desktop/HW1/OS_HW1_Gil_Nir/signals.h
 

@@ -46,10 +46,10 @@ RM = /usr/bin/cmake -E remove -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/student/Desktop/HW1/HW1
+CMAKE_SOURCE_DIR = /home/student/Desktop/HW1/OS_HW1_Gil_Nir
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/student/Desktop/HW1/HW1/build
+CMAKE_BINARY_DIR = /home/student/Desktop/HW1/OS_HW1_Gil_Nir/build
 
 # Include any dependencies generated for this target.
 include CMakeFiles/os_hw1.dir/depend.make
@@ -62,16 +62,16 @@ include CMakeFiles/os_hw1.dir/flags.make
 
 CMakeFiles/os_hw1.dir/smash.cpp.o: CMakeFiles/os_hw1.dir/flags.make
 CMakeFiles/os_hw1.dir/smash.cpp.o: ../smash.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/student/Desktop/HW1/HW1/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/os_hw1.dir/smash.cpp.o"
-	/usr/bin/g++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/os_hw1.dir/smash.cpp.o -c /home/student/Desktop/HW1/HW1/smash.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/student/Desktop/HW1/OS_HW1_Gil_Nir/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/os_hw1.dir/smash.cpp.o"
+	/usr/bin/g++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/os_hw1.dir/smash.cpp.o -c /home/student/Desktop/HW1/OS_HW1_Gil_Nir/smash.cpp
 
 CMakeFiles/os_hw1.dir/smash.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/os_hw1.dir/smash.cpp.i"
-	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/student/Desktop/HW1/HW1/smash.cpp > CMakeFiles/os_hw1.dir/smash.cpp.i
+	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/student/Desktop/HW1/OS_HW1_Gil_Nir/smash.cpp > CMakeFiles/os_hw1.dir/smash.cpp.i
 
 CMakeFiles/os_hw1.dir/smash.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/os_hw1.dir/smash.cpp.s"
-	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/student/Desktop/HW1/HW1/smash.cpp -o CMakeFiles/os_hw1.dir/smash.cpp.s
+	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/student/Desktop/HW1/OS_HW1_Gil_Nir/smash.cpp -o CMakeFiles/os_hw1.dir/smash.cpp.s
 
 CMakeFiles/os_hw1.dir/smash.cpp.o.requires:
 
@@ -86,16 +86,16 @@ CMakeFiles/os_hw1.dir/smash.cpp.o.provides.build: CMakeFiles/os_hw1.dir/smash.cp
 
 CMakeFiles/os_hw1.dir/Commands.cpp.o: CMakeFiles/os_hw1.dir/flags.make
 CMakeFiles/os_hw1.dir/Commands.cpp.o: ../Commands.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/student/Desktop/HW1/HW1/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/os_hw1.dir/Commands.cpp.o"
-	/usr/bin/g++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/os_hw1.dir/Commands.cpp.o -c /home/student/Desktop/HW1/HW1/Commands.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/student/Desktop/HW1/OS_HW1_Gil_Nir/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/os_hw1.dir/Commands.cpp.o"
+	/usr/bin/g++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/os_hw1.dir/Commands.cpp.o -c /home/student/Desktop/HW1/OS_HW1_Gil_Nir/Commands.cpp
 
 CMakeFiles/os_hw1.dir/Commands.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/os_hw1.dir/Commands.cpp.i"
-	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/student/Desktop/HW1/HW1/Commands.cpp > CMakeFiles/os_hw1.dir/Commands.cpp.i
+	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/student/Desktop/HW1/OS_HW1_Gil_Nir/Commands.cpp > CMakeFiles/os_hw1.dir/Commands.cpp.i
 
 CMakeFiles/os_hw1.dir/Commands.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/os_hw1.dir/Commands.cpp.s"
-	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/student/Desktop/HW1/HW1/Commands.cpp -o CMakeFiles/os_hw1.dir/Commands.cpp.s
+	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/student/Desktop/HW1/OS_HW1_Gil_Nir/Commands.cpp -o CMakeFiles/os_hw1.dir/Commands.cpp.s
 
 CMakeFiles/os_hw1.dir/Commands.cpp.o.requires:
 
@@ -110,16 +110,16 @@ CMakeFiles/os_hw1.dir/Commands.cpp.o.provides.build: CMakeFiles/os_hw1.dir/Comma
 
 CMakeFiles/os_hw1.dir/signals.cpp.o: CMakeFiles/os_hw1.dir/flags.make
 CMakeFiles/os_hw1.dir/signals.cpp.o: ../signals.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/student/Desktop/HW1/HW1/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/os_hw1.dir/signals.cpp.o"
-	/usr/bin/g++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/os_hw1.dir/signals.cpp.o -c /home/student/Desktop/HW1/HW1/signals.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/student/Desktop/HW1/OS_HW1_Gil_Nir/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/os_hw1.dir/signals.cpp.o"
+	/usr/bin/g++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/os_hw1.dir/signals.cpp.o -c /home/student/Desktop/HW1/OS_HW1_Gil_Nir/signals.cpp
 
 CMakeFiles/os_hw1.dir/signals.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/os_hw1.dir/signals.cpp.i"
-	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/student/Desktop/HW1/HW1/signals.cpp > CMakeFiles/os_hw1.dir/signals.cpp.i
+	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/student/Desktop/HW1/OS_HW1_Gil_Nir/signals.cpp > CMakeFiles/os_hw1.dir/signals.cpp.i
 
 CMakeFiles/os_hw1.dir/signals.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/os_hw1.dir/signals.cpp.s"
-	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/student/Desktop/HW1/HW1/signals.cpp -o CMakeFiles/os_hw1.dir/signals.cpp.s
+	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/student/Desktop/HW1/OS_HW1_Gil_Nir/signals.cpp -o CMakeFiles/os_hw1.dir/signals.cpp.s
 
 CMakeFiles/os_hw1.dir/signals.cpp.o.requires:
 
@@ -146,7 +146,7 @@ os_hw1: CMakeFiles/os_hw1.dir/Commands.cpp.o
 os_hw1: CMakeFiles/os_hw1.dir/signals.cpp.o
 os_hw1: CMakeFiles/os_hw1.dir/build.make
 os_hw1: CMakeFiles/os_hw1.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/student/Desktop/HW1/HW1/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Linking CXX executable os_hw1"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/student/Desktop/HW1/OS_HW1_Gil_Nir/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Linking CXX executable os_hw1"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/os_hw1.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.
@@ -165,6 +165,6 @@ CMakeFiles/os_hw1.dir/clean:
 .PHONY : CMakeFiles/os_hw1.dir/clean
 
 CMakeFiles/os_hw1.dir/depend:
-	cd /home/student/Desktop/HW1/HW1/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/student/Desktop/HW1/HW1 /home/student/Desktop/HW1/HW1 /home/student/Desktop/HW1/HW1/build /home/student/Desktop/HW1/HW1/build /home/student/Desktop/HW1/HW1/build/CMakeFiles/os_hw1.dir/DependInfo.cmake --color=$(COLOR)
+	cd /home/student/Desktop/HW1/OS_HW1_Gil_Nir/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/student/Desktop/HW1/OS_HW1_Gil_Nir /home/student/Desktop/HW1/OS_HW1_Gil_Nir /home/student/Desktop/HW1/OS_HW1_Gil_Nir/build /home/student/Desktop/HW1/OS_HW1_Gil_Nir/build /home/student/Desktop/HW1/OS_HW1_Gil_Nir/build/CMakeFiles/os_hw1.dir/DependInfo.cmake --color=$(COLOR)
 .PHONY : CMakeFiles/os_hw1.dir/depend
 
