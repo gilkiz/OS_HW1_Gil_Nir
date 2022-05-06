@@ -1,2 +1,4 @@
-bash: $'\020\006d\251%V': command not found
-bash: $'\020\002d\251%V': command not found
+bash: $'\020': command not found
+bash: $'\234\a\254U': command not found
+bash: -c: line 0: unexpected EOF while looking for matching `"'
+bash: -c: line 1: syntax error: unexpected end of file
