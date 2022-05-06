@@ -431,8 +431,8 @@ void ForegroundCommand::execute()
     job->SwitchIsStopped();
   SmallShell &smash = SmallShell::getInstance();
   smash.setCurrentFgPid(job->getPID());
-  smash.setCurrentFgCommand(this);
-  std::cout << job->GetCmdLine() << ": " << job->getPID() << std::endl;
+  smash.setCurrentFgCommand(smash.CreateCommand(job->GetCmdLine().c_str()));
+  std::cout << job->GetCmdLine() << " : " << job->getPID() << std::endl;
   int status = 0;
   waitpid(job->getPID(), &status, WUNTRACED);
   if(WIFEXITED(status) || WIFSIGNALED(status))
@@ -483,7 +483,7 @@ void BackgroundCommand::execute()
     return;
   }
   job->SwitchIsStopped();
-  std::cout << job->GetCmdLine() << ": " << job->getPID() << std::endl;
+  std::cout << job->GetCmdLine() << " : " << job->getPID() << std::endl;
 }
 
 // QuitCommand, quit
@@ -496,7 +496,6 @@ void QuitCommand::execute()
     this->jobs->killAllJobs();
   exit(0);
 }
-// f
 // TouchCommand
 void TouchCommand::execute()
 {
@@ -562,9 +561,11 @@ void JobsList::printJobsList(){
 
 void JobsList::killAllJobs()
 { 
+  this->removeFinishedJobs();
   std::cout << "smash: sending SIGKILL signal to " << this->jobs.size() << " jobs:" << std::endl;
   for(auto it: this->jobs)
   {
+    std::cout << it.getPID() << ": " << it.GetCmdLine() << std::endl;
     SYS_CALL(kill(it.getPID(), SIGKILL), "kill");
   }
 }
@@ -688,6 +689,10 @@ time_t JobsList::JobEntry::GetInsertTime()
 void JobsList::JobEntry::setTime(){
   time(&(this->insert_time));
 }
+bool JobsList::JobEntry::getJobIsStopped()
+{
+  return this->is_stopped;
+}
 
 /*============================================================*/
 /*======================External Command======================*/
@@ -716,10 +721,10 @@ void ExternalCommand::execute()
   }
   else // son (external)
   {
-    char* cmd_line = (char*)this->GetCmdLine().c_str();
+    char* cmd_line = (char*)(this->GetCmdLine()).c_str();
     _removeBackgroundSign(cmd_line);
     SYS_CALL(setpgrp(), "setpgrp");
-    execlp("/bin/bash", "bash", "-c", cmd_line, NULL);
+    execlp("/bin/bash", "bash", "-c",cmd_line, NULL);
     perror("smash error: execlp failed");
     exit(0);
   }

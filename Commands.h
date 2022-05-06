@@ -130,6 +130,8 @@ class JobsList {
     void SwitchIsStopped();
     time_t GetInsertTime();
     void setTime();
+    void restartInsertionTime();
+    bool getJobIsStopped();
   };
  // TODO: Add your data members
 

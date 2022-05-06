@@ -1,6 +1,6 @@
-bash: $'\260\377\274ӿU': command not found
-bash: $'\260\003\275ӿU': command not found
-bash: $'\200\003\275ӿU': command not found
-bash: $'\260\003\275ӿU': command not found
-bash: $'@\b\275ӿU': command not found
-bash: $'\260\006\275ӿU': command not found
+bash: $'\260\177\376y-V': command not found
+bash: $'\260\203\376y-V': command not found
+bash: $'\200\203\376y-V': command not found
+bash: $'\260\203\376y-V': command not found
+bash: $'@\210\376y-V': command not found
+bash: $'\260\206\376y-V': command not found
