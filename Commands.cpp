@@ -295,7 +295,10 @@ void ChangePromptCommand::execute()
 void ShowPidCommand::execute()
 {
   SmallShell &smash = SmallShell::getInstance();
-  std::cout << "smash pid is " << smash.getSmashPid() << std::endl;
+  stringstream ss;
+  ss << "smash pid is " << smash.getSmashPid() << std::endl;
+  string output = ss.str();
+  SYS_CALL(write(STDOUT_FILENO, output.c_str(), output.length()), "write");
 }
 
 // GetCurrDirCommand, pwd
@@ -305,7 +308,10 @@ void GetCurrDirCommand::execute()
   char root[PATH_MAX];
   SYS_CALL_PTR(getcwd(root, sizeof(root)), "getcwd");
   //if (getcwd(root, sizeof(root)) != NULL)
-  std::cout << root << std::endl;
+  stringstream ss;
+  ss << root << std::endl;
+  string output = ss.str();
+  SYS_CALL(write(STDOUT_FILENO, output.c_str(), output.length()), "write");
 }
 
 // ChangeDirCommand, cd
@@ -330,7 +336,10 @@ void ChangeDirCommand::execute()
     {
       if((*(this->last_directory)) == NULL) 
       {
-        std::cerr << "smash error: cd: OLDPWD not set" << std::endl;
+        stringstream ss;
+        ss << "smash error: cd: OLDPWD not set" << std::endl;
+        string output = ss.str();
+        SYS_CALL(write(STDERR_FILENO, output.c_str(), output.length()), "write");
         return;
       }
       cd = *(this->last_directory);
@@ -358,7 +367,10 @@ void ChangeDirCommand::execute()
   }
   else if(this->size_args > 2)
   {
-    std::cerr << "smash error: cd: too many arguments" << std::endl;
+    stringstream ss;
+    ss << "smash error: cd: too many arguments" << std::endl;
+    string err_output = ss.str();
+    SYS_CALL(write(STDERR_FILENO, err_output.c_str(), err_output.length()), "write");
   }
 }
 
@@ -383,27 +395,39 @@ void KillCommand::execute()
 {
   if(this->size_args != 3 || (this->args[1])[0] != '-')
   {
-    std::cerr << "smash error: kill: invalid arguments" << std::endl;
+    stringstream ss;
+    ss << "smash error: kill: invalid arguments" << std::endl;
+    string err_output = ss.str();
+    SYS_CALL(write(STDERR_FILENO, err_output.c_str(), err_output.length()), "write");
     return;
   }
   int sig = atoi((string(this->args[1])).substr(1).c_str());
   int jobid = atoi(this->args[2]);
   if (sig == 0 || jobid == 0 || sig < 1 || 31 < sig)
   {
-    std::cerr << "smash error: kill: invalid arguments" << std::endl;
+    stringstream ss;
+    ss << "smash error: kill: invalid arguments" << std::endl;
+    string err_output = ss.str();
+    SYS_CALL(write(STDERR_FILENO, err_output.c_str(), err_output.length()), "write");
     return;
   }
   this->jobs->removeFinishedJobs();
   JobsList::JobEntry *job = this->jobs->getJobById(jobid);
   if(job == nullptr || job->IsFinished())
   {
-    std::cerr << "smash error: kill: job-id " << jobid << " does not exist" << std::endl;
+    stringstream ss;
+    ss << "smash error: kill: job-id " << jobid << " does not exist" << std::endl;
+    string err_output = ss.str();
+    SYS_CALL(write(STDERR_FILENO, err_output.c_str(), err_output.length()), "write");
     return;
   }
   int pid = job->getPID();
   SYS_CALL(kill(pid, sig), "kill");
   job->Finished();
-  std::cout << "signal number " << sig << " was sent to pid " << pid << std::endl;
+  stringstream ss;
+  ss << "signal number " << sig << " was sent to pid " << pid << std::endl;
+  string output = ss.str();
+  SYS_CALL(write(STDOUT_FILENO, output.c_str(), output.length()), "write");
 }
 
 // ForegroundCommand, fg
@@ -419,14 +443,20 @@ void ForegroundCommand::execute()
     jobid = atoi(this->args[1]);
     if(jobid == 0)
     {
-      std::cerr << "smash error: fg: invalid arguments" << std::endl;
+      stringstream ss;
+      ss << "smash error: fg: invalid arguments" << std::endl;
+      string err_output = ss.str();
+      SYS_CALL(write(STDERR_FILENO, err_output.c_str(), err_output.length()), "write");
       return;
     }
     this->jobs->removeFinishedJobs();
     job = this->jobs->getJobById(jobid);
     if(job == nullptr)
     {
-      std::cerr << "smash error: fg: job-id " << jobid << " does not exist" << std::endl;
+      stringstream ss;
+      ss << "smash error: fg: job-id " << jobid << " does not exist" << std::endl;
+      string err_output = ss.str();
+      SYS_CALL(write(STDERR_FILENO, err_output.c_str(), err_output.length()), "write");
       return;
     }
   }
@@ -435,13 +465,19 @@ void ForegroundCommand::execute()
     job = this->jobs->getLastJob(&jobid);
     if(!job)
     {
-      std::cerr << "smash error: fg: jobs list is empty" << std::endl;
+      stringstream ss;
+      ss << "smash error: fg: jobs list is empty" << std::endl;
+      string err_output = ss.str();
+      SYS_CALL(write(STDERR_FILENO, err_output.c_str(), err_output.length()), "write");
       return;
     }
   }
   else
   {
-    std::cerr << "smash error: fg: invalid arguments" << std::endl;
+    stringstream ss;
+    ss << "smash error: fg: invalid arguments" << std::endl;
+    string err_output = ss.str();
+    SYS_CALL(write(STDERR_FILENO, err_output.c_str(), err_output.length()), "write");
     return;
   }
   if(job->IsStopped())
@@ -449,7 +485,10 @@ void ForegroundCommand::execute()
   SmallShell &smash = SmallShell::getInstance();
   smash.setCurrentFgPid(job->getPID());
   smash.setCurrentFgCommand(smash.CreateCommand(job->GetCmdLine().c_str()));
-  std::cout << job->GetCmdLine() << " : " << job->getPID() << std::endl;
+  stringstream ss;
+  ss << job->GetCmdLine() << " : " << job->getPID() << std::endl;
+  string output = ss.str();
+  SYS_CALL(write(STDOUT_FILENO, output.c_str(), output.length()), "write");
   int status = 0;
   waitpid(job->getPID(), &status, WUNTRACED);
   if(WIFEXITED(status) || WIFSIGNALED(status))
@@ -469,19 +508,28 @@ void BackgroundCommand::execute()
     jobid = atoi(this->args[1]);
     if(jobid == 0)
     {
-      std::cerr << "smash error: bg: invalid arguments" << std::endl;
+      stringstream ss;
+      ss << "smash error: bg: invalid arguments" << std::endl;
+      string err_output = ss.str();
+      SYS_CALL(write(STDERR_FILENO, err_output.c_str(), err_output.length()), "write");
       return;
     }
     job = this->jobs->getJobById(jobid);
     if(!job)
     {
-      std::cerr << "smash error: bg: job-id " << jobid << " does not exist" << std::endl;
+      stringstream ss;
+      ss << "smash error: bg: job-id " << jobid << " does not exist" << std::endl;
+      string err_output = ss.str();
+      SYS_CALL(write(STDERR_FILENO, err_output.c_str(), err_output.length()), "write");
       return;
     }
     if(!(job->IsStopped()))
     {
-      std::cerr << "smash error: bg: job-id " << jobid <<
+      stringstream ss;
+      ss << "smash error: bg: job-id " << jobid <<
        " is already running in the background" << std::endl;
+      string err_output = ss.str();
+      SYS_CALL(write(STDERR_FILENO, err_output.c_str(), err_output.length()), "write");
       return;
     }
   }
@@ -490,17 +538,26 @@ void BackgroundCommand::execute()
     job = this->jobs->getLastStoppedJob(&jobid);
     if(!job)
     {
-      std::cerr << "smash error: bg: there is no stopped jobs to resume" << std::endl;
+      stringstream ss;
+      ss << "smash error: bg: there is no stopped jobs to resume" << std::endl;
+      string err_output = ss.str();
+      SYS_CALL(write(STDERR_FILENO, err_output.c_str(), err_output.length()), "write");
       return;
     }
   }
   else
   {
-    std::cerr << "smash error: bg: invalid arguments" << std::endl;
+    stringstream ss;
+    ss << "smash error: bg: invalid arguments" << std::endl;
+    string err_output = ss.str();
+    SYS_CALL(write(STDERR_FILENO, err_output.c_str(), err_output.length()), "write");
     return;
   }
   job->SwitchIsStopped();
-  std::cout << job->GetCmdLine() << " : " << job->getPID() << std::endl;
+  stringstream ss;
+  ss << job->GetCmdLine() << " : " << job->getPID() << std::endl;
+  string output = ss.str();
+  SYS_CALL(write(STDOUT_FILENO, output.c_str(), output.length()), "write");
 }
 
 // QuitCommand, quit
@@ -518,7 +575,10 @@ void TouchCommand::execute()
 {
     if(this->size_args != 3)
     {
-      std::cerr<<("smash error: touch: invalid arguments")<<std::endl;
+      stringstream ss;
+      ss << "smash error: touch: invalid arguments" << std::endl;
+      string err_output = ss.str();
+      SYS_CALL(write(STDERR_FILENO, err_output.c_str(), err_output.length()), "write");
       return;
     }
     char path_to_directory[PATH_MAX];
@@ -560,29 +620,36 @@ void JobsList::addJob(Command* cmd, pid_t pid , bool isStopped)
 }
 
 void JobsList::printJobsList(){
-  for (size_t i = 0; i < (this->jobs).size(); i++){
+  for (size_t i = 0; i < (this->jobs).size(); i++)
+  {
     time_t current_time;
     time(&current_time);
     double seconds_elapsed = difftime(current_time, jobs[i].GetInsertTime());
-    if(jobs[i].IsStopped()){
-      std::cout << "[" << jobs[i].getJobID() << "] "<< jobs[i].GetCmdLine() <<
-        " : "<< jobs[i].getPID() << " " << seconds_elapsed << " secs" << " (stopped)" << std::endl;  
-    }
+    stringstream ss;
+    ss << "[" << jobs[i].getJobID() << "] "<< jobs[i].GetCmdLine() <<
+      " : " << jobs[i].getPID() << " " << seconds_elapsed << " secs";
+    string output = ss.str();
+    if(jobs[i].IsStopped())
+      output += " (stopped)\n";
     else
-    {
-      std::cout << "[" << jobs[i].getJobID() << "] "<< jobs[i].GetCmdLine() <<
-      " : " << jobs[i].getPID() << " " << seconds_elapsed << " secs" << std::endl;
-    }
+      output += "\n";
+    SYS_CALL(write(STDOUT_FILENO, output.c_str(), output.length()), "write");
   }
 }
 
 void JobsList::killAllJobs()
 { 
   this->removeFinishedJobs();
-  std::cout << "smash: sending SIGKILL signal to " << this->jobs.size() << " jobs:" << std::endl;
+  stringstream ss;
+  ss << "smash: sending SIGKILL signal to " << this->jobs.size() << " jobs:" << std::endl;
+  string output = ss.str();
+  SYS_CALL(write(STDOUT_FILENO, output.c_str(), output.length()), "write");
   for(auto it: this->jobs)
   {
-    std::cout << it.getPID() << ": " << it.GetCmdLine() << std::endl;
+    stringstream ss1;
+    ss1 << it.getPID() << ": " << it.GetCmdLine() << std::endl;
+    string output1 = ss1.str();
+    SYS_CALL(write(STDOUT_FILENO, output1.c_str(), output1.length()), "write");
     SYS_CALL(kill(it.getPID(), SIGKILL), "kill");
   }
 }
@@ -824,6 +891,9 @@ void TailCommand::execute()
 {
   int cnt = 10;
   int file_index = 1;
+  stringstream ss;
+  ss << "smash error: tail: invalid arguments" << std::endl;
+  string err_output = ss.str();
   if(this->size_args == 3)
   {
     cnt = atoi((string(this->args[1])).substr(1).c_str());
@@ -831,7 +901,7 @@ void TailCommand::execute()
     {
       if(cnt == 0 || string(this->args[1]).substr(0, 1).compare("-") != 0)
       {
-        std::cerr << "smash error: tail: invalid arguments" << std::endl;
+        SYS_CALL(write(STDERR_FILENO, err_output.c_str(), err_output.length()), "write");
         return;
       }
     }
@@ -839,7 +909,7 @@ void TailCommand::execute()
   }
   else if(this->size_args != 2)
   {
-    std::cerr << "smash error: tail: invalid arguments" << std::endl;
+    SYS_CALL(write(STDERR_FILENO, err_output.c_str(), err_output.length()), "write");
     return;
   }
   int fd_file;
@@ -850,10 +920,16 @@ void TailCommand::execute()
     return;
   }
   char buffer[1];
-  int pos = 0, line_length = 0;
+  int pos = 1, line_length = 0;
   int size = 0;
   SYS_CALL(read(fd_file, buffer, 1), "read");
   SYS_CALL((size = lseek(fd_file, 0, SEEK_END)), "lseek");
+  if(size == 0)
+  {
+    SYS_CALL(close(fd_file), "close");
+    return;
+  }
+  SYS_CALL(lseek(fd_file, -pos, SEEK_END), "lseek");
   SYS_CALL(read(fd_file, buffer, 1), "read");
   int arr_size = cnt;
   string* output_arr = new string[arr_size];
@@ -862,6 +938,7 @@ void TailCommand::execute()
   {
     while(WHITESPACE.substr(1).find(buffer[0]) != string::npos)
     {
+      line_length++;
       pos++;
       if(pos > size) 
       {
@@ -888,7 +965,6 @@ void TailCommand::execute()
     if(line_length > 0)
     {
       if(cnt == arr_size) line_length = pos;
-      else line_length += 1;
       if(line_length > 1)
       {
         char* line = new char[line_length];
@@ -900,8 +976,7 @@ void TailCommand::execute()
     }
   }
   for(int i = 0; i < arr_size; i++)
-    if(!(output_arr[i].empty()))
-      std::cout << output_arr[i];
+    SYS_CALL(write(STDOUT_FILENO, output_arr[i].c_str(), output_arr[i].length()), "write");
   delete[] output_arr;
   SYS_CALL(close(fd_file), "close");
 }
@@ -915,8 +990,8 @@ void PipeCommand::execute()
     SmallShell &smash = SmallShell::getInstance();
     int fd[2];
     SYS_CALL(pipe(fd) , "pipe");
-    std::string first_command = getFirstCommand(this->cmd_line);
-    std::string second_command = getSecondCommand(this->cmd_line); 
+    string first_command = getFirstCommand(this->cmd_line);
+    string second_command = getSecondCommand(this->cmd_line); 
 
     if(isWithAnd(this->GetCmdLine())) //* Meaning this is "|&" command
     {
@@ -998,25 +1073,25 @@ void PipeCommand::execute()
     }
 }
 
-bool PipeCommand::isWithAnd(std::string stringToCheck)
+bool PipeCommand::isWithAnd(string stringToCheck)
 {
-  if(stringToCheck.find("|&") != std::string::npos)
+  if(stringToCheck.find("|&") != string::npos)
   {
     return true;
   }
   return false;
 }
 
-std::string PipeCommand::getFirstCommand(std::string whole_command)
+string PipeCommand::getFirstCommand(string whole_command)
 {
-  std::string str = whole_command.substr(0,whole_command.find_first_of("|"));
+  string str = whole_command.substr(0,whole_command.find_first_of("|"));
   _trim(str);
   return str;
 }
 
-std::string PipeCommand::getSecondCommand(std::string whole_command)
+string PipeCommand::getSecondCommand(string whole_command)
 {
-  std::string str = whole_command.substr(whole_command.find_first_of("|")+2 , whole_command.length());
+  string str = whole_command.substr(whole_command.find_first_of("|")+2 , whole_command.length());
   _trim(str);
   return str;
 }
