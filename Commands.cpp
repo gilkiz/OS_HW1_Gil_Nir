@@ -321,6 +321,8 @@ void ChangeDirCommand::execute()
   {
     char before_change_pwd[PATH_MAX];
     SYS_CALL_PTR(getcwd(before_change_pwd, sizeof(before_change_pwd)), "getcwd");
+    char* before = new char[PATH_MAX];
+    strcpy(before, before_change_pwd);
     string s_cd = "/";
     char *cd;
     char *cd_with_prefix = (char*)(s_cd.c_str());
@@ -336,7 +338,8 @@ void ChangeDirCommand::execute()
     else
     {
       cd = args[1];
-      if((strcmp(&((args[1])[0]), "/")) != 0)
+      if(string(args[1]).substr(0,1).compare("/") != 0 && 
+          string(args[1]).substr(0,1).compare(".") != 0)
         cd_with_prefix = strcat(cd_with_prefix, args[1]);
       //cd = args[1];
     }
@@ -349,7 +352,9 @@ void ChangeDirCommand::execute()
     }
     else
       SYS_CALL(chdir(cd), "chdir");
-    *(this->last_directory) = before_change_pwd;
+    if(*(this->last_directory) != NULL)
+      delete *(this->last_directory);
+    *(this->last_directory) = before;
   }
   else if(this->size_args > 2)
   {
