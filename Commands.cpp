@@ -827,10 +827,13 @@ void TailCommand::execute()
   if(this->size_args == 3)
   {
     cnt = atoi((string(this->args[1])).substr(1).c_str());
-    if(cnt == 0)
+    if(string(this->args[1]).substr(1).compare("0") != 0)
     {
-      std::cerr << "smash error: tail: invalid arguments" << std::endl;
-      return;
+      if(cnt == 0 || string(this->args[1]).substr(0, 1).compare("-") != 0)
+      {
+        std::cerr << "smash error: tail: invalid arguments" << std::endl;
+        return;
+      }
     }
     file_index = 2;
   }
@@ -841,11 +844,19 @@ void TailCommand::execute()
   }
   int fd_file;
   SYS_CALL((fd_file = open(this->args[file_index], O_RDONLY)), "open");
+  if(cnt == 0) 
+  {
+    SYS_CALL(close(fd_file), "close");
+    return;
+  }
   char buffer[1];
   int pos = 0, line_length = 0;
   int size = 0;
+  SYS_CALL(read(fd_file, buffer, 1), "read");
   SYS_CALL((size = lseek(fd_file, 0, SEEK_END)), "lseek");
   SYS_CALL(read(fd_file, buffer, 1), "read");
+  int arr_size = cnt;
+  string* output_arr = new string[arr_size];
 
   while(pos <= size && cnt > 0)
   {
@@ -867,19 +878,31 @@ void TailCommand::execute()
       pos++;
       if(pos > size) 
       {
+        if(line_length == 1 && cnt == arr_size) line_length = 0;
         SYS_CALL(lseek(fd_file, -size, SEEK_END), "lseek");
         break;
       }
       SYS_CALL(lseek(fd_file, -pos, SEEK_END), "lseek");
       SYS_CALL(read(fd_file, buffer, 1), "read");
     }
-    char* line = new char[line_length];
-    SYS_CALL(read(fd_file, line, line_length), "read");
-    std::cout << string(line).substr(0,line_length) << std::endl;
-    delete line;
-    line_length = 0;
-    cnt--;
+    if(line_length > 0)
+    {
+      if(cnt == arr_size) line_length = pos;
+      else line_length += 1;
+      if(line_length > 1)
+      {
+        char* line = new char[line_length];
+        SYS_CALL(read(fd_file, line, line_length), "read");
+        output_arr[--cnt] = string(line).substr(0,line_length);
+        delete line;
+      }
+      line_length = 0;
+    }
   }
+  for(int i = 0; i < arr_size; i++)
+    if(!(output_arr[i].empty()))
+      std::cout << output_arr[i];
+  delete[] output_arr;
   SYS_CALL(close(fd_file), "close");
 }
 /*============================================================*/
