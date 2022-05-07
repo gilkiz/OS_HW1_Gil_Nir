@@ -977,7 +977,11 @@ void PipeCommand::execute()
 
 bool PipeCommand::isWithAnd(std::string stringToCheck)
 {
-  return(stringToCheck.find("|&"));
+  if(stringToCheck.find("|&") != std::string::npos)
+  {
+    return true;
+  }
+  return false;
 }
 
 std::string PipeCommand::getFirstCommand(std::string whole_command)
@@ -989,7 +993,7 @@ std::string PipeCommand::getFirstCommand(std::string whole_command)
 
 std::string PipeCommand::getSecondCommand(std::string whole_command)
 {
-  std::string str = whole_command.substr(whole_command.find_first_of("|")+1 , whole_command.length());
+  std::string str = whole_command.substr(whole_command.find_first_of("|")+2 , whole_command.length());
   _trim(str);
   return str;
 }
