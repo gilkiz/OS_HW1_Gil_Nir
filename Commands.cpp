@@ -797,9 +797,9 @@ void RedirectionCommand::execute()
   }
   int fd_file;
   if(this->is_append) // >>
-    fd_file = open(output_file, O_RDWR | O_CREAT | O_APPEND, 0666);
+    fd_file = open(output_file, O_WRONLY | O_CREAT | O_APPEND, 0655);
   else                // >
-    fd_file = open(output_file, O_RDWR | O_CREAT | O_TRUNC, 0666);
+    fd_file = open(output_file, O_WRONLY | O_CREAT | O_TRUNC, 0655);
   if(fd_file == -1)
     {
       perror("smash error: open failed");
