@@ -761,11 +761,10 @@ RedirectionCommand::RedirectionCommand(const char* cmd_line) : Command(cmd_line)
 void RedirectionCommand::execute()
 {
   char *command_line = new char[COMMAND_ARGS_MAX_LENGTH];
-  if(strcpy(command_line, this->cmd_line) == NULL) // error
+  strcpy(command_line, this->cmd_line);
   if (_isBackgroundCommand(command_line))
     _removeBackgroundSign(command_line);
   string cmd_s = _trim(string(command_line));
-  //const char * output, *cmd;
   char* output_file, *command;
   size_t i = cmd_s.find(">");
   command = new char[i];
@@ -774,16 +773,13 @@ void RedirectionCommand::execute()
   if(this->is_append)
   {
     output_file = new char[cmd_s.length() - (i + 2)];
-    //output = _trim(cmd_s.substr(i + 2)).c_str();
     strcpy(output_file, _trim(cmd_s.substr(i + 2)).c_str());
   }
   else
   {
     output_file = new char[cmd_s.length() - (i + 1)];
-    //output = _trim(cmd_s.substr(i + 1)).c_str();
     strcpy(output_file, _trim(cmd_s.substr(i + 1)).c_str());
   }
-  //output_file = (char*)output;
   
   _removeBackgroundSign(output_file);
 
@@ -808,8 +804,6 @@ void RedirectionCommand::execute()
   SYS_CALL_AND_RESTORE_FD(close(STDOUT_FILENO), "close", std_out, STDOUT_FILENO);
   SYS_CALL_AND_RESTORE_FD(dup2(fd_file, STDOUT_FILENO), "dup2", std_out, STDOUT_FILENO);
   
-  //cmd = _trim(cmd_s.substr(0, i)).c_str();
-  //command = (char*)cmd;
   _removeBackgroundSign(command);
 
   smash.executeCommand(command);
