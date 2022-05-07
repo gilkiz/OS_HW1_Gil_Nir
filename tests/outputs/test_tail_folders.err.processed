@@ -1,3 +1,2 @@
-bash: $'\340\341\005\r\275U': command not found
-smash error: lseek failed: Success
+smash error: lseek failed: No child processes
 smash error: open failed: No such file or directory

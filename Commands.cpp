@@ -321,7 +321,9 @@ void ChangeDirCommand::execute()
   {
     char before_change_pwd[PATH_MAX];
     SYS_CALL_PTR(getcwd(before_change_pwd, sizeof(before_change_pwd)), "getcwd");
+    string s_cd = "/";
     char *cd;
+    char *cd_with_prefix = (char*)(s_cd.c_str());
     if (strcmp(this->args[1], "-") == 0)
     {
       if((*(this->last_directory)) == NULL) 
@@ -332,8 +334,21 @@ void ChangeDirCommand::execute()
       cd = *(this->last_directory);
     }
     else
+    {
       cd = args[1];
-    SYS_CALL(chdir(cd), "chdir");
+      if((strcmp(&((args[1])[0]), "/")) != 0)
+        cd_with_prefix = strcat(cd_with_prefix, args[1]);
+      //cd = args[1];
+    }
+    if(strcmp(cd_with_prefix, "/") != 0)
+    {
+      if(chdir(cd_with_prefix) == -1)
+      {
+        SYS_CALL(chdir(cd), "chdir");
+      }
+    }
+    else
+      SYS_CALL(chdir(cd), "chdir");
     *(this->last_directory) = before_change_pwd;
   }
   else if(this->size_args > 2)
@@ -368,7 +383,7 @@ void KillCommand::execute()
   }
   int sig = atoi((string(this->args[1])).substr(1).c_str());
   int jobid = atoi(this->args[2]);
-  if (sig == 0 || jobid == 0)
+  if (sig == 0 || jobid == 0 || sig < 1 || 31 < sig)
   {
     std::cerr << "smash error: kill: invalid arguments" << std::endl;
     return;
@@ -700,6 +715,10 @@ bool JobsList::JobEntry::getJobIsStopped()
 
 void ExternalCommand::execute()
 {
+  string cmd = this->GetCmdLine();
+  cmd = _trim(cmd);
+  char* cmd_line = (char*)(cmd.c_str());
+  _removeBackgroundSign(cmd_line);
   SmallShell &smash = SmallShell::getInstance();
   pid_t pid = fork();
   if(pid < 0)
@@ -721,8 +740,6 @@ void ExternalCommand::execute()
   }
   else // son (external)
   {
-    char* cmd_line = (char*)(this->GetCmdLine()).c_str();
-    _removeBackgroundSign(cmd_line);
     SYS_CALL(setpgrp(), "setpgrp");
     execlp("/bin/bash", "bash", "-c",cmd_line, NULL);
     perror("smash error: execlp failed");
@@ -736,30 +753,40 @@ void ExternalCommand::execute()
 
 RedirectionCommand::RedirectionCommand(const char* cmd_line) : Command(cmd_line)
 {
-  if((string(this->cmd_line)).find(" > ") != string::npos)
-    this->is_append = false;
-  else this->is_append = true;
+  if((string(this->cmd_line)).find(">>") != string::npos)
+    this->is_append = true;
+  else this->is_append = false;
+}
 
+void RedirectionCommand::execute()
+{
   char *command_line = new char[COMMAND_ARGS_MAX_LENGTH];
   if(strcpy(command_line, this->cmd_line) == NULL) // error
   if (_isBackgroundCommand(command_line))
     _removeBackgroundSign(command_line);
   string cmd_s = _trim(string(command_line));
-  size_t i = cmd_s.find(" >> ");
+  //const char * output, *cmd;
+  char* output_file, *command;
+  size_t i = cmd_s.find(">");
+  command = new char[i];
+  strcpy(command, _trim(cmd_s.substr(0, i)).c_str());
+  
   if(this->is_append)
   {
-    this->output_file = cmd_s.substr(i + 4).c_str();
+    output_file = new char[cmd_s.length() - (i + 2)];
+    //output = _trim(cmd_s.substr(i + 2)).c_str();
+    strcpy(output_file, _trim(cmd_s.substr(i + 2)).c_str());
   }
   else
   {
-    i = cmd_s.find(" > ");
-    this->output_file = cmd_s.substr(i + 3).c_str();
+    output_file = new char[cmd_s.length() - (i + 1)];
+    //output = _trim(cmd_s.substr(i + 1)).c_str();
+    strcpy(output_file, _trim(cmd_s.substr(i + 1)).c_str());
   }
-  this->command = cmd_s.substr(0, i).c_str();
-}
+  //output_file = (char*)output;
+  
+  _removeBackgroundSign(output_file);
 
-void RedirectionCommand::execute()
-{
   SmallShell& smash = SmallShell::getInstance();
   int std_out = dup(STDOUT_FILENO);
   if(std_out == -1)
@@ -769,9 +796,9 @@ void RedirectionCommand::execute()
   }
   int fd_file;
   if(this->is_append) // >>
-    fd_file = open(this->output_file, O_RDWR | O_CREAT | O_APPEND, 0666);
+    fd_file = open(output_file, O_RDWR | O_CREAT | O_APPEND, 0666);
   else                // >
-    fd_file = open(this->output_file, O_RDWR | O_CREAT | O_TRUNC, 0666);
+    fd_file = open(output_file, O_RDWR | O_CREAT | O_TRUNC, 0666);
   if(fd_file == -1)
     {
       perror("smash error: open failed");
@@ -781,7 +808,11 @@ void RedirectionCommand::execute()
   SYS_CALL_AND_RESTORE_FD(close(STDOUT_FILENO), "close", std_out, STDOUT_FILENO);
   SYS_CALL_AND_RESTORE_FD(dup2(fd_file, STDOUT_FILENO), "dup2", std_out, STDOUT_FILENO);
   
-  smash.executeCommand(this->command);
+  //cmd = _trim(cmd_s.substr(0, i)).c_str();
+  //command = (char*)cmd;
+  _removeBackgroundSign(command);
+
+  smash.executeCommand(command);
   SYS_CALL(dup2(std_out, STDOUT_FILENO), "dup2");
   SYS_CALL(close(fd_file), "close");
 }

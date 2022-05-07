@@ -1,6 +1,0 @@
-/home/student/Desktop/HW1/HW1/build
-smash pid is 9584
-[1] sleep 1234& : 9648 3 secs
-/home/student/Desktop/HW1/HW1/build
-[1] sleep 1234& : 9648 16 secs
-[2] sleep 2597& : 9724 5 secs
