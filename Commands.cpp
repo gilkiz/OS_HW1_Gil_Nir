@@ -140,7 +140,8 @@ void _removeBackgroundSign(char* cmd_line) {
 
 // TODO: Add your implementation for classes in Commands.h
 
-SmallShell::SmallShell() : shellname("smash> "), last_directory(NULL), jobs_list(new JobsList()), smash_pid(getpid()), current_foreground_process_pid(-1), current_foreground_command(NULL){};
+SmallShell::SmallShell() : shellname("smash> "), last_directory(NULL), jobs_list(new JobsList()), smash_pid(getpid()),
+                             current_foreground_process_pid(-1), current_foreground_command(NULL), alarm_list(new AlarmList()) {};
 
 SmallShell::~SmallShell() 
 {
@@ -162,7 +163,9 @@ Command * SmallShell::CreateCommand(const char* cmd_line)
   string cmd_s = _trim(string(command_line));
   string firstWord = cmd_s.substr(0, cmd_s.find_first_of(" \n"));
   
-  if(cmd_s.find(">") != string::npos || cmd_s.find(">>") != string::npos)
+  if(firstWord.compare("timeout") == 0)
+    return new TimeOutCommand(cmd_line);
+  else if(cmd_s.find(">") != string::npos || cmd_s.find(">>") != string::npos)
     return new RedirectionCommand(cmd_line);
   else if(cmd_s.find("|") != string::npos || cmd_s.find("|&") != string::npos)
     return new PipeCommand(cmd_line);
@@ -1104,7 +1107,7 @@ void AlarmList::addAlarm(const time_t alarm_time, const pid_t pid)
   this->alarm_map.insert({ alarm_time, pid });
   if(this->alarm_map.begin()->second == pid)
   {
-    alarm(alarm_time-time(nullptr));
+    alarm(alarm_time - time(nullptr));
   }
 }
 

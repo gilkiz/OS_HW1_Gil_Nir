@@ -213,7 +213,6 @@ class TouchCommand : public BuiltInCommand {
 class AlarmList
 {
   map<time_t, pid_t> alarm_map;
-
   public:
   AlarmList() : alarm_map(map<time_t, pid_t>()) {};
   ~AlarmList();
@@ -239,10 +238,10 @@ class SmallShell {
    char *last_directory;
    JobsList *jobs_list;
    int smash_pid;
-   AlarmList* alarm_list;
    SmallShell();
    int current_foreground_process_pid; 
    Command *current_foreground_command;
+   AlarmList* alarm_list;
 
  public:
   Command *CreateCommand(const char* cmd_line);

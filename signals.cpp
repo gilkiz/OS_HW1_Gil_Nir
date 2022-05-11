@@ -74,6 +74,7 @@ void ctrlCHandler(int sig_num) {
 void alarmHandler(int sig_num) 
 {
   SmallShell &smash = SmallShell::getInstance();
+  smash.GetJobsList()->removeFinishedJobs();
   pid_t pid = smash.getAlarmList()->getAndRemoveLastAlarm();
   if(pid == -1) return;
   if(smash.getSmashPid() == pid)
