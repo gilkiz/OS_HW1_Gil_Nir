@@ -2,8 +2,7 @@
 #include <signal.h>
 #include "signals.h"
 #include "Commands.h"
-
-
+#include <sys/wait.h>
 
 using namespace std;
 
@@ -72,7 +71,37 @@ void ctrlCHandler(int sig_num) {
   }
 }
 
-void alarmHandler(int sig_num) {
-  // TODO: Add your implementation
+void alarmHandler(int sig_num) 
+{
+  SmallShell &smash = SmallShell::getInstance();
+  pid_t pid = smash.getAlarmList()->getAndRemoveLastAlarm();
+  if(pid == -1) return;
+  if(smash.getSmashPid() == pid)
+  {
+    std::cout << "smash: got an alarm" << std::endl;
+    return;
+  }
+  else if(smash.GetJobsList()->getJobByPID(pid) == nullptr && smash.getCurrentFgPid() != pid)
+  {
+    waitpid(pid, nullptr, WNOHANG);
+    std::cout << "smash: got an alarm" << std::endl;
+    return;
+  }
+  else
+  {
+    SYS_CALL(kill(pid, SIGKILL), "kill");
+    waitpid(pid, nullptr, WNOHANG);
+    string cmd_line;
+    if(smash.getCurrentFgPid() != pid)
+    {
+      cmd_line = smash.GetJobsList()->getJobByPID(pid)->GetCmdLine();
+      smash.GetJobsList()->removeJobByPid(pid);
+    }
+    else
+    {
+      cmd_line = smash.getCurrentFgCommand()->GetCmdLine();
+    }
+    std::cout << "smash: got an alarm" << std::endl << "smash: " << cmd_line << " timed out!" << std::endl;
+  }
 }
 

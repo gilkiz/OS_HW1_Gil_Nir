@@ -153,7 +153,7 @@ SmallShell::~SmallShell()
 Command * SmallShell::CreateCommand(const char* cmd_line) 
 {
   char *command_line = new char[COMMAND_ARGS_MAX_LENGTH];
-  if(strcpy(command_line, cmd_line) == NULL) // error
+  if(strcpy(command_line, cmd_line) == NULL)
   if (_isBackgroundCommand(command_line))
   {
     _removeBackgroundSign(command_line);
@@ -814,7 +814,7 @@ void ExternalCommand::execute()
   {
     SYS_CALL(setpgrp(), "setpgrp");
     execlp("/bin/bash", "bash", "-c",cmd_line, NULL);
-    perror("smash error: execlp failed");
+    perror("smash error: execv failed");
     exit(0);
   }
 }
@@ -1094,4 +1094,96 @@ string PipeCommand::getSecondCommand(string whole_command)
   string str = whole_command.substr(whole_command.find_first_of("|")+2 , whole_command.length());
   _trim(str);
   return str;
+}
+
+
+/*================Alarm List================*/
+
+void AlarmList::addAlarm(const time_t alarm_time, const pid_t pid)
+{
+  this->alarm_map.insert({ alarm_time, pid });
+  if(this->alarm_map.begin()->second == pid)
+  {
+    alarm(alarm_time-time(nullptr));
+  }
+}
+
+pid_t AlarmList::getAndRemoveLastAlarm()
+{
+  if(this->alarm_map.empty())
+  {
+    return -1;
+  }
+  else
+  {
+    pid_t pid = this->alarm_map.begin()->second;
+    this->alarm_map.erase(this->alarm_map.begin());
+    if(!(this->alarm_map.empty()))
+    {
+      alarm(this->alarm_map.begin()->first - time(nullptr));
+    }
+    return pid;
+  }
+}
+
+TimeOutCommand::TimeOutCommand(const char* cmd_line) : BuiltInCommand(cmd_line)
+{
+  if(this->size_args <= 2)
+  {
+    std::cerr << "smash error: timeout: invalid arguments" << std::endl;
+    this->alarm_time = -1;
+  }
+  else
+  {
+    int alarm_tm = atoi(this->args[1]);
+    if(alarm_tm != 0)
+    {
+      this->alarm_time = alarm_tm + time(nullptr);
+    }
+    else
+    {
+      std::cerr << "smash error: timeout: invalid arguments" << std::endl;
+      this->alarm_time = -1;
+    }
+  }
+}
+
+void TimeOutCommand::execute()
+{
+  if(this->size_args <= 2 || this->alarm_time == -1) return;
+  else
+  {
+    SmallShell& smash = SmallShell::getInstance();
+    pid_t pid = fork();
+    if(pid < 0) perror("smash error: fork failed");
+    else if(pid == 0)
+    {
+      SYS_CALL(setpgrp(), "setpgrp");
+      char *command_line = new char[COMMAND_ARGS_MAX_LENGTH];
+      strcpy(command_line, cmd_line);
+      _removeBackgroundSign(command_line);
+      string command = _trim(string(command_line));
+      command = _trim(command);
+      command = command.substr(command.find_first_of(" "));
+      command = _trim(command);
+      command = command.substr(command.find_first_of(" "));
+      execlp("/bin/bash", "bash", "-c", command.c_str(), NULL);
+      perror("smash error: execv failed");
+      exit(0);
+    }
+    else
+    {
+      smash.getAlarmList()->addAlarm(this->alarm_time, pid);
+      if(_isBackgroundCommand(this->cmd_line))
+      {
+        smash.GetJobsList()->addJob(this, pid);
+      }
+      else
+      {
+        smash.setCurrentFgCommand(this);
+        smash.setCurrentFgPid(pid);
+        waitpid(pid, nullptr, WUNTRACED);
+      }
+    }
+  }
 }

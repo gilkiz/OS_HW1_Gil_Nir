@@ -1,10 +1,12 @@
 #ifndef SMASH_COMMAND_H_
 #define SMASH_COMMAND_H_
 
+#include <map>
 #include <vector>
 #include <string>
 using std::string;
 using std::vector;
+using std::map;
 
 #define COMMAND_ARGS_MAX_LENGTH (200)
 #define COMMAND_MAX_ARGS (20)
@@ -202,10 +204,33 @@ class TailCommand : public BuiltInCommand {
 class TouchCommand : public BuiltInCommand {
  public:
   TouchCommand(const char* cmd_line) : BuiltInCommand(cmd_line){} 
-  virtual ~TouchCommand() {} ;
+  virtual ~TouchCommand() {}
   void execute() override;
 };
 
+/*========Alarm List========*/
+
+class AlarmList
+{
+  map<time_t, pid_t> alarm_map;
+
+  public:
+  AlarmList() : alarm_map(map<time_t, pid_t>()) {};
+  ~AlarmList();
+  void addAlarm(const time_t time, const pid_t pid);
+  pid_t getAndRemoveLastAlarm();
+};
+
+class TimeOutCommand : public BuiltInCommand
+{
+  time_t alarm_time;
+  public:
+  TimeOutCommand(const char* cmd_line);
+  virtual ~TimeOutCommand() {}
+  void execute() override;
+};
+
+/*========SmallShell========*/
 
 class SmallShell {
  private:
@@ -214,7 +239,8 @@ class SmallShell {
    char *last_directory;
    JobsList *jobs_list;
    int smash_pid;
-   SmallShell(); //??  <--
+   AlarmList* alarm_list;
+   SmallShell();
    int current_foreground_process_pid; 
    Command *current_foreground_command;
 
@@ -238,6 +264,7 @@ class SmallShell {
   int getCurrentFgPid();
   void setCurrentFgCommand(Command *cmd);
   Command* getCurrentFgCommand();
+  AlarmList* getAlarmList() { return this->alarm_list; };
   // TODO: add extra methods as needed
 };
 
